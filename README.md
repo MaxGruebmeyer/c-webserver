@@ -4,6 +4,8 @@
 
 - Open TCP Socket and make basic connection
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
+- Add Unit Tests
+- Add actual logging library (write yourself for semesterproject compliance?)
 - Support the most basic HTTP/1.1 Features
     - Basic request strucute
     - GET/POST/PUT/DEL
@@ -23,3 +25,4 @@
     - Watch out for buffer overflows
     - Do we need to support Auth of some sort?
 - Use the webserver to host an actual website
+- Perftest the shit out of it (& compare with other webservers)
