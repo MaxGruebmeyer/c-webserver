@@ -9,6 +9,7 @@
 - Support the most basic HTTP/1.1 Features
     - Basic request strucute
     - GET/POST/PUT/DEL
+- Review what we can replace with the stdlibs!
 - Support HTTPS
 - Support keep-alive
 - Provide different startup options via configuration file and other maybe during compile time
@@ -26,3 +27,8 @@
     - Do we need to support Auth of some sort?
 - Use the webserver to host an actual website
 - Perftest the shit out of it (& compare with other webservers)
+
+## Writeup of dev process
+
+- Try to do it with barebone tools and built in features
+- Use man pages to see what we need to do (e.g. man socket)
