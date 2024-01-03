@@ -56,7 +56,22 @@ int main(void)
 
     /* TODO (GM): Handle messages larger than MAX_MESSAGE_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    recv(sockfd, msg, MAX_MESSAGE_SIZE, 0);
+    while (recv(sockfd, msg, MAX_MESSAGE_SIZE, 0) != 0) {
+        /* TODO (GM):
+         * - Handle all possible error codes
+         * - Build state machine that spins(?) if not connected
+         */
+        if (errno == ENOTCONN) {
+            printf("Socket not connected!\n");
+            sleep(1);
+            continue;
+        }
+
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            printf("Error during recv: %i\n", errno);
+        }
+    }
+
     printf("Received a message: %s\n", msg);
 
     if (close(sockfd) != 0) {
