@@ -3,15 +3,22 @@
 #include <string.h>
 #include <errno.h>
 
+/* TODO (GM): Technically stdint is new with C99... */
+#include <stdint.h>
+
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#define IP "127.0.0.1"
 #define PORT 8080
 #define BACKLOG_SIZE 100
 
 #define MAX_MESSAGE_SIZE 1024
+
+static int get_ipv4_bytes(char *buf, char *ipv4);
+static int construct_sa_family(char *buf, char *ipv4, const uint16_t port);
 
 static int handle_socket_err();
 static int handle_bind_err(const int sockfd);
@@ -34,9 +41,10 @@ int main(void)
     memset(&addr, 0, sizeof(addr));
 
     addr.sa_family = AF_INET;
-    memcpy(addr.sa_data, "127.0.0.1", sizeof(addr.sa_data) - 1);
-
-    printf("Addr: %s\n", addr.sa_data);
+    if (construct_sa_family(addr.sa_data, IP, PORT) != 0) {
+        printf("Could not convert %s:%i to address, check your configuration!\n", IP, PORT);
+        return -1;
+    }
 
     if (bind(sockfd, &addr, sizeof(addr)) != 0) {
         return handle_bind_err(sockfd);
@@ -54,6 +62,55 @@ int main(void)
     if (close(sockfd) != 0) {
         return handle_close_err(sockfd);
     }
+
+    return 0;
+}
+
+static int get_ipv4_bytes(char *buf, char *ipv4)
+{
+    int i = 0;
+    char tmp_buf[4];
+    memset(tmp_buf, '\0', sizeof(tmp_buf));
+
+    while (*ipv4) {
+        if (*ipv4 != '.') {
+            if (i >= 3) {
+                /* ipv4 is not a valid ipv4! */
+                return -1;
+            }
+
+            tmp_buf[i++] = *ipv4++;
+            continue;
+        }
+
+        *buf++ = (uint8_t)atoi(tmp_buf);
+        memset(tmp_buf, '\0', sizeof(tmp_buf));
+
+        ipv4++;
+        i = 0;
+    }
+
+    *buf++ = (uint8_t)atoi(tmp_buf);
+    memset(tmp_buf, '\0', sizeof(tmp_buf));
+
+    return 0;
+}
+
+static int construct_sa_family(char *buf, char *ipv4, const uint16_t port)
+{
+    char ipv4_bytes[5];
+    ipv4_bytes[4] = 0;
+
+    printf("String ip: %s\n", ipv4);
+    if (get_ipv4_bytes(ipv4_bytes, ipv4) != 0) {
+        return -1;
+    }
+
+    printf("Conv ip: %i.%i.%i.%i\n", ipv4_bytes[0], ipv4_bytes[1], ipv4_bytes[2], ipv4_bytes[3]);
+
+    memcpy(buf, &port, 2);
+    memcpy(buf + 2, ipv4_bytes, 4);
+    buf[7] = '\0';
 
     return 0;
 }
