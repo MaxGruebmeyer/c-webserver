@@ -14,6 +14,17 @@
     return 0;
 } */
 
+int my_syscall(const int syscall_no, int *arg1, int *arg2, int *arg3)
+{
+    register int _syscall_no asm("rax") = syscall_no;
+    register int *_arg1 asm("rdi") = arg1;
+    register int *_arg2 asm("rsi") = arg2;
+    register int *_arg3 asm("rdx") = arg3;
+    asm("syscall");
+
+    return 0;
+}
+
 int main(void)
 {
     syscall(1, 1, "Hello, world!\n", 15);
