@@ -12,17 +12,21 @@
 #include <sys/socket.h>
 
 #define IP "127.0.0.1"
-#define PORT 8080
+#define SERVER_PORT 8080
+#define CLIENT_PORT 8081
 #define BACKLOG_SIZE 100
 
 #define MAX_MESSAGE_SIZE 1024
 
-static int get_ipv4_bytes(char *buf, char *ipv4);
-static int construct_sa_family(char *buf, char *ipv4, const uint16_t port);
+static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
+static int get_ipv4_bytes(char *buf, const char *ipv4);
+static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port);
 
 static int handle_socket_err();
 static int handle_bind_err(const int sockfd);
 static int handle_listen_err();
+static int handle_accept_err();
+static int handle_recv_err();
 static int handle_close_err(const int sockfd);
 
 int main(void)
@@ -31,18 +35,18 @@ int main(void)
      * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
      */
     const int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    int connected_sockfd;
+
     char msg[MAX_MESSAGE_SIZE];
     struct sockaddr addr;
+    socklen_t addrlen;
 
     if (sockfd == -1) {
         return handle_socket_err();
     }
 
-    memset(&addr, 0, sizeof(addr));
-
-    addr.sa_family = AF_INET;
-    if (construct_sa_family(addr.sa_data, IP, PORT) != 0) {
-        printf("Could not convert %s:%i to address, check your configuration!\n", IP, PORT);
+    if (construct_sockaddr(&addr, sizeof(addr), IP, SERVER_PORT) != 0) {
+        printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, SERVER_PORT, errno);
         return -1;
     }
 
@@ -54,9 +58,22 @@ int main(void)
         return handle_listen_err();
     }
 
+    /* TODO (GM): Make it so server accepts connection from everywhere! */
+    if (construct_sockaddr(&addr, sizeof(addr), IP, CLIENT_PORT) != 0) {
+        printf("Could not construct client sockaddr %s:%i, error code %i!\n", IP, CLIENT_PORT, errno);
+        return -1;
+    }
+
+    addrlen = sizeof(addr);
+    printf("Waiting for connections from %s:%i on %s:%i...\n", IP, CLIENT_PORT, IP, SERVER_PORT);
+
+    if ((connected_sockfd = accept(sockfd, &addr, &addrlen)) == -1) {
+        return handle_accept_err();
+    }
+
     /* TODO (GM): Handle messages larger than MAX_MESSAGE_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    while (recv(sockfd, msg, MAX_MESSAGE_SIZE, 0) != 0) {
+    while (recv(connected_sockfd, msg, MAX_MESSAGE_SIZE, 0) != 0) {
         /* TODO (GM):
          * - Handle all possible error codes
          * - Build state machine that spins(?) if not connected
@@ -68,20 +85,42 @@ int main(void)
         }
 
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            printf("Error during recv: %i\n", errno);
+            handle_recv_err();
         }
+
+        printf("Got an EAGAIN or EWOULDBLOCK, retrying...\n");
     }
 
     printf("Received a message: %s\n", msg);
 
+    /* TODO (GM): Error handling -> Always close sockets during failure! */
+    printf("Closing connected socket %i...\n", connected_sockfd);
+    if (close(connected_sockfd) != 0) {
+        handle_close_err(connected_sockfd);
+    }
+
+    printf("Closing socket %i...\n", sockfd);
     if (close(sockfd) != 0) {
-        return handle_close_err(sockfd);
+        handle_close_err(sockfd);
+    }
+
+    printf("Done!\n");
+    return 0;
+}
+
+static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
+{
+    memset(addr, 0, addrlen);
+    addr->sa_family = AF_INET;
+    if (construct_sa_data(addr->sa_data, ipv4, port) != 0) {
+        printf("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
+        return -1;
     }
 
     return 0;
 }
 
-static int get_ipv4_bytes(char *buf, char *ipv4)
+static int get_ipv4_bytes(char *buf, const char *ipv4)
 {
     int i = 0;
     char tmp_buf[4];
@@ -111,7 +150,7 @@ static int get_ipv4_bytes(char *buf, char *ipv4)
     return 0;
 }
 
-static int construct_sa_family(char *buf, char *ipv4, const uint16_t port)
+static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port)
 {
     char ipv4_bytes[5];
     ipv4_bytes[4] = 0;
@@ -211,6 +250,100 @@ static int handle_listen_err()
             break;
         default:
             printf("Listen syscall failed with error code %i!\n", errno);
+            break;
+    }
+
+    return -1;
+}
+
+static int handle_accept_err()
+{
+    switch (errno) {
+        /* The following two are the same - at least in C */
+        /* case EWOULDBLOCK: */
+        case EAGAIN:
+            printf("Could not accept - socket is marked nonblocking and no connections are present to be accepted.\n");
+            break;
+        case EBADF:
+            printf("Could not accept - sockfd is not an open fd.\n");
+            break;
+        case ECONNABORTED:
+            printf("Could not accept - connection has been aborted.\n");
+            break;
+        case EFAULT:
+            printf("Could not accept - addr argument is not in a writeable part of the user address space.\n");
+            break;
+        case EINTR:
+            printf("Could not accept - syscall was interrupted by a signal before a connection arrived.\n");
+            break;
+        case EINVAL:
+            printf("Could not accept - socket is not listening for connections or addrlen is invalid or invalid value in flags.\n");
+            break;
+        case EMFILE:
+            printf("Could not accept - The per-process limit on the number of open fds has been reached.\n");
+            break;
+        case ENFILE:
+            printf("Could not accept - The system-wide limit on the total number of open files has been reached.\n");
+            break;
+        case ENOBUFS:
+        case ENOMEM:
+            printf("Could not accept - not enough free memory. This often indicates that the memory allocation is limited by "
+                    "the socket buffer limits rather than the system memory.\n");
+            break;
+        case ENOTSOCK:
+            printf("Could not accept - sockfd does not refer to a socket.\n");
+            break;
+        case EOPNOTSUPP:
+            printf("Could not accept - the referenced socket is not of type SOCK_STREAM.\n");
+            break;
+        case EPROTO:
+            printf("Could not accept - protocol error.\n");
+            break;
+        case EPERM:
+            printf("Could not accept - firewall rules forbid connection.\n");
+            break;
+        default:
+            printf("Could not accept - error code %i.\n", errno);
+            break;
+    }
+
+    return -1;
+}
+
+static int handle_recv_err()
+{
+    switch (errno) {
+        /* The following two are the same - at least in C */
+        /* case EWOULDBLOCK: */
+        case EAGAIN:
+            printf("Could not recv - socket is marked nonblocking and recv would block or recv timeout expired before data has arrived.\n");
+            break;
+        case EBADF:
+            printf("Could not recv - sockfd is an invalid fd.\n");
+            break;
+        case ECONNREFUSED:
+            printf("Could not recv - remote host refused the network connection (typically because it is not running the requested service).\n");
+            break;
+        case EFAULT:
+            printf("Could not recv - recv buffer pointer points to outside the process's address space.\n");
+            break;
+        case EINTR:
+            printf("Could not recv - recv was sigkilled.\n");
+            break;
+        case EINVAL:
+            printf("Could not recv - invalid argument.\n");
+            break;
+        case ENOMEM:
+            printf("Could not recv - could not allocate sufficient memory.\n");
+            break;
+        case ENOTCONN:
+            printf("Could not recv - socket is associated with a connection-oriented protocol and has not been connected.\n");
+            break;
+        case ENOTSOCK:
+            printf("Could not recv - sockfd does not refer to a socket.\n");
+            break;
+        default:
+            printf("Could not recv - error code %i.\n", errno);
             break;
     }
 
