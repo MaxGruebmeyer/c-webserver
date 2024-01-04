@@ -4,9 +4,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* TODO (GM): Technically stdint is new with C99... */
-#include <stdint.h>
-
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
 
@@ -18,9 +15,9 @@
 
 #define MAX_MESSAGE_SIZE 1024
 
-static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
 static int get_ipv4_bytes(char *buf, const char *ipv4);
-static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port);
+static int construct_sa_data(char *buf, const char *ipv4, const unsigned short port);
 static int handle_connect_error();
 static int handle_send_error();
 
@@ -72,7 +69,7 @@ int main(void)
     return 0;
 }
 
-static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port)
 {
     memset(addr, 0, addrlen);
     addr->sa_family = AF_INET_IPv4;
@@ -101,20 +98,20 @@ static int get_ipv4_bytes(char *buf, const char *ipv4)
             continue;
         }
 
-        *buf++ = (uint8_t)atoi(tmp_buf);
+        *buf++ = (unsigned char)atoi(tmp_buf);
         memset(tmp_buf, '\0', sizeof(tmp_buf));
 
         ipv4++;
         i = 0;
     }
 
-    *buf++ = (uint8_t)atoi(tmp_buf);
+    *buf++ = (unsigned char)atoi(tmp_buf);
     memset(tmp_buf, '\0', sizeof(tmp_buf));
 
     return 0;
 }
 
-static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port)
+static int construct_sa_data(char *buf, const char *ipv4, const unsigned short port)
 {
     char ipv4_bytes[5];
     ipv4_bytes[4] = 0;
