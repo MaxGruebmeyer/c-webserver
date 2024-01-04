@@ -9,16 +9,16 @@
 
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
-#include <sys/socket.h>
 
 #include "../src/syscall.h"
+#include "../src/socket.h"
 
 #define IP "127.0.0.1"
 #define SERVER_PORT 8080
 
 #define MAX_MESSAGE_SIZE 1024
 
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
 static int get_ipv4_bytes(char *buf, const char *ipv4);
 static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port);
 static int handle_connect_error();
@@ -26,11 +26,11 @@ static int handle_send_error();
 
 int main(void)
 {
-    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET, SOCK_STREAM, 0);
+    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET_IPv4, SOCK_STREAM_TCP, 0);
     int bytes_sent;
 
     /* char msg[MAX_MESSAGE_SIZE]; */
-    struct sockaddr addr;
+    struct ipv4_sockaddr addr;
 
     if (sockfd == -1) {
         printf("Error %i during socket creation!\n", errno);
@@ -72,10 +72,10 @@ int main(void)
     return 0;
 }
 
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
 {
     memset(addr, 0, addrlen);
-    addr->sa_family = AF_INET;
+    addr->sa_family = AF_INET_IPv4;
     if (construct_sa_data(addr->sa_data, ipv4, port) != 0) {
         printf("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
         return -1;

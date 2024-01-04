@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 
 #include "syscall.h"
+#include "socket.h"
 
 #define IP "127.0.0.1"
 #define SERVER_PORT 8080
@@ -34,7 +35,7 @@ int main(void)
     /* AF_INET sockets can either be connection-oriented SOCK_STREAM
      * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
      */
-    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET, SOCK_STREAM, 0);
+    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET_IPv4, SOCK_STREAM, 0);
     int connected_sockfd;
 
     char msg[MAX_MESSAGE_SIZE];
