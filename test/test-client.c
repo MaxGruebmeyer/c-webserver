@@ -13,9 +13,7 @@
 #include <sys/socket.h>
 
 #define IP "127.0.0.1"
-#define CLIENT_PORT 8081
 #define SERVER_PORT 8080
-#define BACKLOG_SIZE 100
 
 #define MAX_MESSAGE_SIZE 1024
 
@@ -28,7 +26,7 @@ static int handle_send_error();
 int main(void)
 {
     const int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    int connected_sockfd;
+    int bytes_sent;
 
     /* char msg[MAX_MESSAGE_SIZE]; */
     struct sockaddr addr;
@@ -38,30 +36,15 @@ int main(void)
         return -1;
     }
 
-    if (construct_sockaddr(&addr, sizeof(addr), IP, CLIENT_PORT) != 0) {
-        printf("Could not construct client sockaddr %s:%i, error code %i!\n", IP, CLIENT_PORT, errno);
-        return -1;
-    }
-
-    /* if (bind(sockfd, &addr, sizeof(addr)) != 0) {
-        printf("Error %i during socket binding!\n", errno);
-        return -1;
-    }
-
-    if (listen(sockfd, BACKLOG_SIZE) != 0) {
-        printf("Error %i during socket listening!\n", errno);
-        return -1;
-    } */
-
     if (construct_sockaddr(&addr, sizeof(addr), IP, SERVER_PORT) != 0) {
         printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, SERVER_PORT, errno);
         return -1;
     }
 
-    printf("Trying to connect to %s:%i from %s:%i...\n", IP, SERVER_PORT, IP, CLIENT_PORT);
+    printf("Trying to connect to %s:%i...\n", IP, SERVER_PORT);
 
     while(1) {
-        if ((connected_sockfd = connect(sockfd, &addr, sizeof(addr))) == 0) {
+        if (connect(sockfd, &addr, sizeof(addr)) == 0) {
             printf("Connection established.\n");
             break;
         }
@@ -71,16 +54,13 @@ int main(void)
     }
 
     printf("Sending test request...\n");
-    if (send(connected_sockfd, "Test", 5, 0) != 0) {
+    if ((bytes_sent = send(sockfd, "Test", 5, 0)) == -1) {
         return handle_send_error();
     }
 
-    /* TODO (GM): Error handling -> Always close sockets during failure! */
-    printf("Closing connected socket %i...\n", connected_sockfd);
-    if (close(connected_sockfd) != 0) {
-        printf("Close syscall failed with error code %i!\n", errno);
-    }
+    printf("Successfully sent %i bytes!\n", bytes_sent);
 
+    /* TODO (GM): Error handling -> Always close sockets during failure! */
     printf("Closing socket %i...\n", sockfd);
     if (close(sockfd) != 0) {
         printf("Close syscall failed with error code %i!\n", errno);

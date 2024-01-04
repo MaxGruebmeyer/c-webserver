@@ -13,7 +13,6 @@
 
 #define IP "127.0.0.1"
 #define SERVER_PORT 8080
-#define CLIENT_PORT 8081
 #define BACKLOG_SIZE 100
 
 #define MAX_MESSAGE_SIZE 1024
@@ -39,7 +38,6 @@ int main(void)
 
     char msg[MAX_MESSAGE_SIZE];
     struct sockaddr addr;
-    socklen_t addrlen;
 
     if (sockfd == -1) {
         return handle_socket_err();
@@ -58,16 +56,9 @@ int main(void)
         return handle_listen_err();
     }
 
-    /* TODO (GM): Make it so server accepts connection from everywhere! */
-    if (construct_sockaddr(&addr, sizeof(addr), IP, CLIENT_PORT) != 0) {
-        printf("Could not construct client sockaddr %s:%i, error code %i!\n", IP, CLIENT_PORT, errno);
-        return -1;
-    }
+    printf("Waiting for connections on %s:%i...\n", IP, SERVER_PORT);
 
-    addrlen = sizeof(addr);
-    printf("Waiting for connections from %s:%i on %s:%i...\n", IP, CLIENT_PORT, IP, SERVER_PORT);
-
-    if ((connected_sockfd = accept(sockfd, &addr, &addrlen)) == -1) {
+    if ((connected_sockfd = accept(sockfd, NULL, NULL)) == -1) {
         return handle_accept_err();
     }
 
@@ -91,7 +82,7 @@ int main(void)
         printf("Got an EAGAIN or EWOULDBLOCK, retrying...\n");
     }
 
-    printf("Received a message: %s\n", msg);
+    printf("Received a message: \"%s\"\n", msg);
 
     /* TODO (GM): Error handling -> Always close sockets during failure! */
     printf("Closing connected socket %i...\n", connected_sockfd);
