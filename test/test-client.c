@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
+#include "../src/syscall.h"
+
 #define IP "127.0.0.1"
 #define SERVER_PORT 8080
 
@@ -24,7 +26,7 @@ static int handle_send_error();
 
 int main(void)
 {
-    const int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET, SOCK_STREAM, 0);
     int bytes_sent;
 
     /* char msg[MAX_MESSAGE_SIZE]; */
@@ -43,7 +45,7 @@ int main(void)
     printf("Trying to connect to %s:%i...\n", IP, SERVER_PORT);
 
     while(1) {
-        if (connect(sockfd, &addr, sizeof(addr)) == 0) {
+        if (syscall(CONNECT_SYSCALL_NO, sockfd, &addr, sizeof(addr)) == 0) {
             printf("Connection established.\n");
             break;
         }
@@ -53,7 +55,7 @@ int main(void)
     }
 
     printf("Sending test request...\n");
-    if ((bytes_sent = send(sockfd, "Test", 5, 0)) == -1) {
+    if ((bytes_sent = syscall(SENDTO_SYSCALL_NO, sockfd, "Test", 5, 0)) == -1) {
         return handle_send_error();
     }
 
@@ -61,7 +63,7 @@ int main(void)
 
     /* TODO (GM): Error handling -> Always close sockets during failure! */
     printf("Closing socket %i...\n", sockfd);
-    if (close(sockfd) != 0) {
+    if (syscall(CLOSE_SYSCALL_NO, sockfd) != 0) {
         printf("Close syscall failed with error code %i!\n", errno);
     }
 
