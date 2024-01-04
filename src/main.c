@@ -8,7 +8,6 @@
 
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
-#include <sys/socket.h>
 
 #include "syscall.h"
 #include "socket.h"
@@ -19,7 +18,7 @@
 
 #define MAX_MESSAGE_SIZE 1024
 
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port);
 static int get_ipv4_bytes(char *buf, const char *ipv4);
 static int construct_sa_data(char *buf, const char *ipv4, const uint16_t port);
 
@@ -35,11 +34,11 @@ int main(void)
     /* AF_INET sockets can either be connection-oriented SOCK_STREAM
      * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
      */
-    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET_IPv4, SOCK_STREAM, 0);
+    const int sockfd = syscall(SOCKET_SYSCALL_NO, AF_INET_IPv4, SOCK_STREAM_TCP, 0);
     int connected_sockfd;
 
     char msg[MAX_MESSAGE_SIZE];
-    struct sockaddr addr;
+    struct ipv4_sockaddr addr;
 
     if (sockfd == -1) {
         return handle_socket_err();
@@ -101,10 +100,10 @@ int main(void)
     return 0;
 }
 
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
+static int construct_sockaddr(struct ipv4_sockaddr *addr, const unsigned addrlen, const char *ipv4, const uint16_t port)
 {
     memset(addr, 0, addrlen);
-    addr->sa_family = AF_INET;
+    addr->sa_family = AF_INET_IPv4;
     if (construct_sa_data(addr->sa_data, ipv4, port) != 0) {
         printf("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
         return -1;
