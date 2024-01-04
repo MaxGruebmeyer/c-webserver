@@ -9,7 +9,6 @@
 
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
 #define IP "127.0.0.1"

@@ -8,7 +8,6 @@
 
 /* TODO (GM): The following are not C std libraries - can they be replaced? */
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
 #define IP "127.0.0.1"
@@ -64,7 +63,7 @@ int main(void)
 
     /* TODO (GM): Handle messages larger than MAX_MESSAGE_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    while (recv(connected_sockfd, msg, MAX_MESSAGE_SIZE, 0) != 0) {
+    while (recvfrom(connected_sockfd, msg, MAX_MESSAGE_SIZE, 0, NULL, NULL) != 0) {
         /* TODO (GM):
          * - Handle all possible error codes
          * - Build state machine that spins(?) if not connected
