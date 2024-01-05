@@ -22,7 +22,8 @@ so we can support users on other operating systems as well.
 TODO (GM): Add docker container!
 
 You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server as well as a test client.
-Use `task run` to run the server and `task run-test` to run the test client.
+Use `task run` to run the server and `task run-test` to run a test client.
+But of course you can just use your own "test client", e.g. a browser or curl.
 
 Of course you can also compile the project manually using gcc and linking all required files (which is all of
 `src/*.c` for the server and all of `src/*.c` but replacing `src/main.c` with `test/test-client.c` for the client.)
