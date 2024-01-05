@@ -6,7 +6,7 @@
 #include "../src/socket.h"
 #include "../src/errorhandler.h"
 
-#define IP "127.0.0.1"
+#define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8080
 
 #define MAX_MESSAGE_SIZE 1024
@@ -24,12 +24,12 @@ int main(void)
         return -1;
     }
 
-    if (construct_sockaddr(&addr, sizeof(addr), IP, SERVER_PORT) != 0) {
-        printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, SERVER_PORT, errno);
+    if (construct_sockaddr(&addr, sizeof(addr), SERVER_IP, SERVER_PORT) != 0) {
+        printf("Could not construct server sockaddr %s:%i, error code %i!\n", SERVER_IP, SERVER_PORT, errno);
         return -1;
     }
 
-    printf("Trying to connect to %s:%i...\n", IP, SERVER_PORT);
+    printf("Trying to connect to %s:%i...\n", SERVER_IP, SERVER_PORT);
 
     while(1) {
         if (syscall(CONNECT_SYSCALL_NO, sockfd, &addr, sizeof(addr)) == 0) {

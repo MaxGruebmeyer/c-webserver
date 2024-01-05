@@ -8,7 +8,7 @@
 #include "socket.h"
 
 #define IP "127.0.0.1"
-#define SERVER_PORT 8080
+#define PORT 8080
 #define BACKLOG_SIZE 100
 
 #define MAX_MESSAGE_SIZE 1024
@@ -28,8 +28,9 @@ int main(void)
         return handle_socket_err();
     }
 
-    if (construct_sockaddr(&addr, sizeof(addr), IP, SERVER_PORT) != 0) {
-        printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, SERVER_PORT, errno);
+    /* TODO (GM): Why does this not bind it to the correct port of 8080? */
+    if (construct_sockaddr(&addr, sizeof(addr), IP, PORT) != 0) {
+        printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, PORT, errno);
         return -1;
     }
 
@@ -41,7 +42,7 @@ int main(void)
         return handle_listen_err();
     }
 
-    printf("Waiting for connections on %s:%i...\n", IP, SERVER_PORT);
+    printf("Waiting for connections on %s:%i...\n", IP, PORT);
 
     if ((connected_sockfd = syscall(ACCEPT_SYSCALL_NO, sockfd, NULL, NULL)) == -1) {
         return handle_accept_err();
