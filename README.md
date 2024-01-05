@@ -30,6 +30,7 @@ Of course you can also compile the project manually using gcc and linking all re
 
 ## TODO
 
+- Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
 - Add Unit Tests
 - Add actual logging library (write yourself for semesterproject compliance?)
