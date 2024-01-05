@@ -28,7 +28,7 @@ long int syscall(long sysno, long arg1, long arg2, long arg3, long arg4, long ar
 
     asm("syscall");
 
-    /* %rax contains return value */
+    /* SYSCALL_NO_REGISTER contains return value */
     return _syscall_no;
 }
 
