@@ -1,32 +1,29 @@
-#include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 
-/* int main(void)
+/* These need to be longs since we're on a 64-Bit system as specified by the registers */
+long int syscall(long sysno, long arg1, long arg2, long arg3, long arg4, long arg5, long arg6)
 {
-    register int syscall_no asm("rax") = 1;
-    register int arg1 asm("rdi") = 0;
-    register char* arg2 asm("rsi") = "Hello, world!\n";
-    register int arg3 asm("rdx") = 14;
+    /* Obviously this is hugely platform dependant and only works on x86_64 Linux systems */
+    /* Furthermore this only works from user space since kernel uses different register. */
+    /* User space uses the registers %rdi, %rsi, %rdx, %rcx, %r8 and %r9 */
+    /* Kernel space uses the registers %rdi, %rsi, %rdx, %r10, %r8 and %r9 */
+    register long _syscall_no asm("rax") = sysno;
+    register long _arg1 asm("rdi") = arg1;
+    register long _arg2 asm("rsi") = arg2;
+    register long _arg3 asm("rdx") = arg3;
+    register long _arg4 asm("rcx") = arg4;
+    register long _arg5 asm("r8") = arg5;
+    register long _arg6 asm("r9") = arg6;
+
     asm("syscall");
 
-    TODO (GM): Why does this print need to be added?
-    printf("Return: %s\n", arg2);
-    return 0;
-} */
-
-int my_syscall(const int syscall_no, int *arg1, int *arg2, int *arg3)
-{
-    register int _syscall_no asm("rax") = syscall_no;
-    register int *_arg1 asm("rdi") = arg1;
-    register int *_arg2 asm("rsi") = arg2;
-    register int *_arg3 asm("rdx") = arg3;
-    asm("syscall");
-
-    return 0;
+    /* %rax contains return value */
+    return _syscall_no;
 }
 
 int main(void)
 {
-    syscall(1, 1, "Hello, world!\n", 15);
+    syscall(1, 1, (long)"Hello, world!\n", 15, (long)NULL, (long)NULL, (long)NULL);
+
     return 0;
 }
