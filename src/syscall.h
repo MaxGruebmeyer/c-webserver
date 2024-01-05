@@ -2,6 +2,8 @@
 
 #define SYSCALL_HEADERS
 
+/* Obviously these numbers are also platform dependant and only work for x86_64 Bit Linux. */
+/* Even x86_32 Bit Linux might use different syscall numbers. */
 #define CLOSE_SYSCALL_NO 3
 #define SOCKET_SYSCALL_NO 41
 #define CONNECT_SYSCALL_NO 42
@@ -12,6 +14,7 @@
 #define BIND_SYSCALL_NO 49
 #define LISTEN_SYSCALL_NO 50
 
-int my_syscall(const int syscall_no, int *arg1, int *arg2, int *arg3);
+/* TODO (GM): Use variable length arguments (...) instead here */
+long int syscall(long sysno, long arg1, long arg2, long arg3, long arg4, long arg5, long arg6);
 
 #endif
