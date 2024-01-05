@@ -18,16 +18,7 @@ tasks:
       - './{{ .OUTPUT_FOLDER }}/client.out'
 
   build:
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - task build-linux OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
-      - task build-windows OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
-    silent: true
-
-  build-linux:
-    platforms: [linux, darwin]
+    platforms: [linux]
     sources:
       - src/*.c
     vars:
@@ -39,30 +30,8 @@ tasks:
       - '{{ .OUTPUT_FOLDER }}/server.out'
       - '{{ .OUTPUT_FOLDER }}/*.o'
 
-  build-windows:
-    platforms: [windows]
-    sources:
-      - src/*.c
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - Powershell.exe ./util/compile.ps1
-    generates:
-      - '{{ .OUTPUT_FOLDER }}/server.out'
-      - '{{ .OUTPUT_FOLDER }}/*.o'
-
   build-test:
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - task build-test-linux OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
-      - task build-test-windows OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
-    silent: true
-
-  build-test-linux:
-    platforms: [linux, darwin]
+    platforms: [linux]
     sources:
       - src/*.c
       - exclude: src/main.c
@@ -76,23 +45,7 @@ tasks:
       - '{{ .OUTPUT_FOLDER }}/server.out'
       - '{{ .OUTPUT_FOLDER }}/*.o'
 
-  build-test-windows:
-    platforms: [windows]
-    sources:
-      - src/*.c
-      - exclude: src/main.c
-      - test/test-client.c
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - echo "build-test-windows is not implemented!"
-    generates:
-      - '{{ .OUTPUT_FOLDER }}/server.out'
-      - '{{ .OUTPUT_FOLDER }}/*.o'
-
   build-shell:
-    # No platform restriction, might also be run on windows under e.g. git bash
     sources:
       - src/*.c
       - exclude: src/main.c
@@ -112,23 +65,3 @@ tasks:
     generates:
       - '{{ .OUTPUT_FOLDER }}/server.out'
       - '{{ .OUTPUT_FOLDER }}/*.o'
-
-  test:
-    cmds:
-      - task test-linux
-      - task test-windows
-    silent: true
-
-  test-linux:
-    platforms: [linux, darwin]
-    cmds:
-      - task test-shell
-
-  test-windows:
-    platforms: [windows]
-    cmds:
-      - Powershell.exe ./util/run-tests.ps1
-
-  test-shell:
-    cmds:
-      - ./util/run-tests.sh

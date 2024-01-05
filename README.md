@@ -15,8 +15,13 @@ TODO (GM): Add an Ubuntu dockerfile so you can run the server on other operating
 
 ## How to run
 
-You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server as well as a test
-client.
+Since this project is so hugely platform dependent it doesn't make sense to build it for an e.g. windows or macOS
+environment which is why the following only works on Linux systems. Note that we will supply a dev container later on
+so we can support users on other operating systems as well.
+
+TODO (GM): Add docker container!
+
+You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server as well as a test client.
 Use `task run` to run the server and `task run-test` to run the test client.
 
 Of course you can also compile the project manually using gcc and linking all required files (which is all of
