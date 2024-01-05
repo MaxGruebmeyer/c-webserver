@@ -3,9 +3,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* TODO (GM): The following are not C std libraries - can they be replaced? */
-#include <unistd.h>
-
 #include "syscall.h"
 #include "socket.h"
 
@@ -69,7 +66,6 @@ int main(void)
          */
         if (errno == ENOTCONN) {
             printf("Socket not connected!\n");
-            sleep(1);
             continue;
         }
 
@@ -347,7 +343,7 @@ static int handle_close_err(const int sockfd)
             break;
         case EINTR:
             printf("Close syscall was interrupted by a signal!\n");
-            if (close(sockfd) != 0) {
+            if (syscall(CLOSE_SYSCALL_NO, sockfd) != 0) {
                 /* TODO (GM): Can this cause an infinite loop? */
                 handle_close_err(sockfd);
             }

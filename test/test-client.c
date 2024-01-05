@@ -4,9 +4,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* TODO (GM): The following are not C std libraries - can they be replaced? */
-#include <unistd.h>
-
 #include "../src/syscall.h"
 #include "../src/socket.h"
 
