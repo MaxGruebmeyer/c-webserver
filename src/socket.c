@@ -54,12 +54,9 @@ static int construct_sa_data(char *buf, const char *ipv4, const unsigned short p
     char ipv4_bytes[5];
     ipv4_bytes[4] = 0;
 
-    printf("String ip: %s\n", ipv4);
     if (get_ipv4_bytes(ipv4_bytes, ipv4) != 0) {
         return -1;
     }
-
-    printf("Conv ip: %i.%i.%i.%i\n", ipv4_bytes[0], ipv4_bytes[1], ipv4_bytes[2], ipv4_bytes[3]);
 
     memcpy(buf, &port, 2);
     memcpy(buf + 2, ipv4_bytes, 4);
