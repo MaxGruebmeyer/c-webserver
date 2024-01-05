@@ -5,37 +5,18 @@
 #include "socket.h"
 
 static int get_ipv4_bytes(char *buf, const char *ipv4);
-static int get_port_bytes(char *buf, const unsigned short port);
-static int construct_sa_data(char *buf, const char *ipv4, const unsigned short port);
+static void get_port_bytes(char *buf, const unsigned short port);
 
 int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port)
 {
     memset(addr, 0, addrlen);
     addr->sa_family = AF_INET;
-    if (construct_sa_data(addr->sa_data, ipv4, port) != 0) {
+
+    get_port_bytes(addr->sa_data.addr.port, port);
+    if (get_ipv4_bytes(addr->sa_data.addr.ip, ipv4) != 0) {
         printf("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
         return -1;
     }
-
-    return 0;
-}
-
-static int construct_sa_data(char *buf, const char *ipv4, const unsigned short port)
-{
-    char port_bytes[2];
-    char ipv4_bytes[4];
-
-    if (get_port_bytes(port_bytes, port) != 0) {
-        return -1;
-    }
-
-    if (get_ipv4_bytes(ipv4_bytes, ipv4) != 0) {
-        return -1;
-    }
-
-    memcpy(buf, port_bytes, 2);
-    memcpy(buf + 2, ipv4_bytes, 4);
-    buf[7] = '\0';
 
     return 0;
 }
@@ -70,7 +51,7 @@ static int get_ipv4_bytes(char *buf, const char *ipv4)
     return 0;
 }
 
-static int get_port_bytes(char *buf, const unsigned short port)
+static void get_port_bytes(char *buf, const unsigned short port)
 {
     union {
         unsigned short port;
@@ -85,6 +66,4 @@ static int get_port_bytes(char *buf, const unsigned short port)
 
     *buf++ = port_union.bytes.larger;
     *buf++ = port_union.bytes.smaller;
-
-    return 0;
 }
