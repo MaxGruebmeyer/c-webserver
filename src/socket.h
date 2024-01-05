@@ -11,4 +11,6 @@ struct sockaddr {
     char sa_data[14];
 };
 
+int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
+
 #endif

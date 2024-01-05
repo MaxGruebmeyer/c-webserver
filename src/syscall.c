@@ -38,13 +38,6 @@ long syscall(long sysno, ...)
     return syscall_fixed(sysno, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
-int main(void)
-{
-    syscall(1, 1, (long)"Hello, world!\n", 15, (long)NULL, (long)NULL, (long)NULL);
-
-    return 0;
-}
-
 /* Disable "-Wunused-variable" for the following function. */
 /* The variables are used, just in Assembly and not in C. */
 #pragma GCC diagnostic ignored "-Wunused-variable"
