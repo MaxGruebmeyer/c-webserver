@@ -14,7 +14,6 @@
 #define BIND_SYSCALL_NO 49
 #define LISTEN_SYSCALL_NO 50
 
-/* TODO (GM): Use variable length arguments (...) instead here */
-long int syscall(long sysno, long arg1, long arg2, long arg3, long arg4, long arg5, long arg6);
+long syscall(long sysno, ...);
 
 #endif
