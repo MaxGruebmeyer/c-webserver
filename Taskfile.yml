@@ -1,0 +1,81 @@
+version: '3'
+
+tasks:
+  run:
+    vars:
+      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
+      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
+    cmds:
+      - task build OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
+      - './{{ .OUTPUT_FOLDER }}/server.out'
+
+  build:
+    vars:
+      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
+      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
+    cmds:
+      - task build-linux OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
+      - task build-windows OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
+    silent: true
+
+  build-linux:
+    platforms: [linux, darwin]
+    sources:
+      - src/*.c
+    vars:
+      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
+      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
+    cmds:
+      - task build-shell
+    generates:
+      - '{{ .OUTPUT_FOLDER }}/server.out'
+      - '{{ .OUTPUT_FOLDER }}/*.o'
+
+  build-windows:
+    platforms: [windows]
+    sources:
+      - src/*.c
+    vars:
+      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
+      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
+    cmds:
+      - Powershell.exe ./util/compile.ps1
+    generates:
+      - '{{ .OUTPUT_FOLDER }}/server.out'
+      - '{{ .OUTPUT_FOLDER }}/*.o'
+
+  build-shell:
+    # No platform restriction, might also be run on windows under e.g. git bash
+    sources:
+      - src/*.c
+    vars:
+      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
+      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
+    cmds:
+      - mkdir -p '{{ .OUTPUT_FOLDER }}'
+      - for: sources
+        cmd: gcc {{ .CFLAGS }} "$(echo '{{ .ITEM }}' | sed -r 's/\\/\//')" -o "$(echo '{{ .ITEM }}' | sed -r 's/\\/\//' | sed -r 's/\.c$/\.o/' | sed 's/src/{{ .OUTPUT_FOLDER }}/')" -c
+      - gcc {{ .CFLAGS }} -o '{{ .OUTPUT_FOLDER }}/server.out' $(find './{{ .OUTPUT_FOLDER }}' -type f -iwholename '*.o' | xargs echo)
+    generates:
+      - '{{ .OUTPUT_FOLDER }}/server.out'
+      - '{{ .OUTPUT_FOLDER }}/*.o'
+
+  test:
+    cmds:
+      - task test-linux
+      - task test-windows
+    silent: true
+
+  test-linux:
+    platforms: [linux, darwin]
+    cmds:
+      - task test-shell
+
+  test-windows:
+    platforms: [windows]
+    cmds:
+      - Powershell.exe ./util/run-tests.ps1
+
+  test-shell:
+    cmds:
+      - ./util/run-tests.sh
