@@ -20,7 +20,7 @@ int main(void)
     struct sockaddr addr;
 
     if (sockfd == -1) {
-        printf("Error %i during socket creation!\n", errno);
+        handle_socket_err();
         return -1;
     }
 
