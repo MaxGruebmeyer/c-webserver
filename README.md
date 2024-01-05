@@ -25,7 +25,7 @@ You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run
 Use `task run` to run the server and `task run-test` to run the test client.
 
 Of course you can also compile the project manually using gcc and linking all required files (which is all of
-`src/*.c` for the server and all of `src/*.c` with `test/test-client.c` but exluding `src/main.c` for the test-client.
+`src/*.c` for the server and all of `src/*.c` but replacing `src/main.c` with `test/test-client.c` for the client.)
 
 ## TODO
 
