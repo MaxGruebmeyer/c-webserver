@@ -14,23 +14,29 @@
 #define SYSCALL_ARG5_REGISTER "r8"
 #define SYSCALL_ARG6_REGISTER "r9"
 
+/* Disable "-Wunused-variable" for the following function. */
+/* The variables are used, just in Assembly and not in C. */
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 /* These need to be longs since we're on a 64-Bit system as specified by the registers */
 /* For a 32-Bit system you would need to use other registers. */
 long int syscall(long sysno, long arg1, long arg2, long arg3, long arg4, long arg5, long arg6)
 {
-    register long _syscall_no asm(SYSCALL_NO_REGISTER) = sysno;
-    register long _arg1 asm(SYSCALL_ARG1_REGISTER) = arg1;
-    register long _arg2 asm(SYSCALL_ARG2_REGISTER) = arg2;
-    register long _arg3 asm(SYSCALL_ARG3_REGISTER) = arg3;
-    register long _arg4 asm(SYSCALL_ARG4_REGISTER) = arg4;
-    register long _arg5 asm(SYSCALL_ARG5_REGISTER) = arg5;
-    register long _arg6 asm(SYSCALL_ARG6_REGISTER) = arg6;
+    register long _syscall_no __asm__(SYSCALL_NO_REGISTER) = sysno;
+    register long _arg1 __asm__(SYSCALL_ARG1_REGISTER) = arg1;
+    register long _arg2 __asm__(SYSCALL_ARG2_REGISTER) = arg2;
+    register long _arg3 __asm__(SYSCALL_ARG3_REGISTER) = arg3;
+    register long _arg4 __asm__(SYSCALL_ARG4_REGISTER) = arg4;
+    register long _arg5 __asm__(SYSCALL_ARG5_REGISTER) = arg5;
+    register long _arg6 __asm__(SYSCALL_ARG6_REGISTER) = arg6;
 
-    asm("syscall");
+    __asm__("syscall");
 
     /* SYSCALL_NO_REGISTER contains return value */
     return _syscall_no;
 }
+
+#pragma GCC diagnostic warning "-Wunused-variable"
 
 int main(void)
 {
