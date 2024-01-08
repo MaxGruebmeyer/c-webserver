@@ -39,47 +39,47 @@ long syscall(long sysno, ...)
     return syscall_fixed(sysno, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
-long close(const long sockfd)
+int close(const int sockfd)
 {
     return syscall(CLOSE_SYSCALL_NO, sockfd);
 }
 
-long socket(const int communcation_domain, const int type)
+int socket(const int communcation_domain, const int type)
 {
     /* 0 is the default protocol for the specified type */
     return syscall(SOCKET_SYSCALL_NO, communcation_domain, type, 0);
 }
 
-long connect(int sockfd, struct sockaddr *addr, const long addrlen)
+int connect(int sockfd, struct sockaddr *addr, const long addrlen)
 {
     return syscall(CONNECT_SYSCALL_NO, sockfd, addr, addrlen);
 }
 
-long accept(const long sockfd)
+int accept(const long sockfd)
 {
     /* NULL:NULL means we accept incoming connections from any ip:port. */
     return syscall(ACCEPT_SYSCALL_NO, sockfd, NULL, NULL);
 }
 
-long sendto(const long sockfd, char *msg, const long msglen)
+int sendto(const long sockfd, char *msg, const long msglen)
 {
     /* 0 because we don't need to pass any flags. */
     return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen, 0);
 }
 
-long recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
+int recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
 {
     /* 0 because we don't need to pass any flags. */
     /* NULL: NULL means we allow receiving from any ip:port */
     return syscall(RECVFROM_SYSCALL_NO, sockfd, msgptr, max_msgsize, 0, NULL, NULL);
 }
 
-long bind(const long sockfd, struct sockaddr *addr, const long addrlen)
+int bind(const long sockfd, struct sockaddr *addr, const long addrlen)
 {
     return syscall(BIND_SYSCALL_NO, sockfd, addr, addrlen);
 }
 
-long listen(const long sockfd, const int backlog_size)
+int listen(const long sockfd, const int backlog_size)
 {
     return syscall(LISTEN_SYSCALL_NO, sockfd, backlog_size);
 }

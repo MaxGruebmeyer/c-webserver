@@ -17,15 +17,14 @@
 
 long syscall(long sysno, ...);
 
-/* TODO (GM): These as macros? */
-long close(const long sockfd);
-long socket(const int communcation_domain, const int type);
-long connect(int sockfd, struct sockaddr *addr, const long addrlen);
-long accept(const long sockfd);
-long sendto(const long sockfd, char *msg, const long msglen);
-long recvfrom(const long sockfd, char *msgptr, const long max_msgsize);
-long shutdown();
-long bind(const long sockfd, struct sockaddr *addr, const long addrlen);
-long listen(const long sockfd, const int backlog_size);
+int close(const int sockfd);
+int socket(const int communcation_domain, const int type);
+int connect(int sockfd, struct sockaddr *addr, const long addrlen);
+int accept(const long sockfd);
+int sendto(const long sockfd, char *msg, const long msglen);
+int recvfrom(const long sockfd, char *msgptr, const long max_msgsize);
+int shutdown();
+int bind(const long sockfd, struct sockaddr *addr, const long addrlen);
+int listen(const long sockfd, const int backlog_size);
 
 #endif
