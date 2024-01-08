@@ -45,7 +45,8 @@ long close(const long sockfd)
 
 long socket(const int communcation_domain, const int type)
 {
-    return syscall(SOCKET_SYSCALL_NO, communcation_domain, type);
+    /* 0 is the default protocol for the specified type */
+    return syscall(SOCKET_SYSCALL_NO, communcation_domain, type, 0);
 }
 
 long connect(int sockfd, struct sockaddr *addr, const long addrlen)

@@ -32,6 +32,10 @@ int main(void)
         return -1;
     }
 
+    printf("Trying to start server on %u.%u.%u.%u:%i\n",
+            addr.sa_data.addr.ip[0], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[2],
+            ((unsigned char)addr.sa_data.addr.port[0] << 8) + (unsigned char)addr.sa_data.addr.port[1]);
+
     if (bind(sockfd, &addr, sizeof(addr)) != 0) {
         return handle_bind_err(sockfd);
     }
@@ -40,7 +44,7 @@ int main(void)
         return handle_listen_err();
     }
 
-    printf("Waiting for connections on %s:%i...\n", IP, PORT);
+    printf("Watiting for connections...\n");
 
     if ((connected_sockfd = accept(sockfd)) == -1) {
         return handle_accept_err();
