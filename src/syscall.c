@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdarg.h>
 
 #include "syscall.h"
@@ -56,17 +57,21 @@ long connect(int sockfd, struct sockaddr *addr, const long addrlen)
 
 long accept(const long sockfd)
 {
-    return syscall(ACCEPT_SYSCALL_NO, sockfd);
+    /* NULL:NULL means we accept incoming connections from any ip:port. */
+    return syscall(ACCEPT_SYSCALL_NO, sockfd, NULL, NULL);
 }
 
 long sendto(const long sockfd, char *msg, const long msglen)
 {
-    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen);
+    /* 0 because we don't need to pass any flags. */
+    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen, 0);
 }
 
 long recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
 {
-    return syscall(RECVFROM_SYSCALL_NO, sockfd, msgptr, max_msgsize);
+    /* 0 because we don't need to pass any flags. */
+    /* NULL: NULL means we allow receiving from any ip:port */
+    return syscall(RECVFROM_SYSCALL_NO, sockfd, msgptr, max_msgsize, 0, NULL, NULL);
 }
 
 long bind(const long sockfd, struct sockaddr *addr, const long addrlen)
