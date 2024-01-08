@@ -1,6 +1,7 @@
 #include <stdarg.h>
 
 #include "syscall.h"
+#include "socket.h"
 
 /* Obviously this is hugely OS and platform dependant and only works on x86_64 Linux systems. */
 /* For other OS the registers might differ and for x86_32 systems as well. */
@@ -36,6 +37,47 @@ long syscall(long sysno, ...)
 
     return syscall_fixed(sysno, arg1, arg2, arg3, arg4, arg5, arg6);
 }
+
+long close(const long sockfd)
+{
+    return syscall(CLOSE_SYSCALL_NO, sockfd);
+}
+
+long socket(const int communcation_domain, const int type)
+{
+    return syscall(SOCKET_SYSCALL_NO, communcation_domain, type);
+}
+
+long connect(int sockfd, struct sockaddr *addr, const long addrlen)
+{
+    return syscall(CONNECT_SYSCALL_NO, sockfd, addr, addrlen);
+}
+
+long accept(const long sockfd)
+{
+    return syscall(ACCEPT_SYSCALL_NO, sockfd);
+}
+
+long sendto(const long sockfd, char *msg, const long msglen)
+{
+    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen);
+}
+
+long recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
+{
+    return syscall(RECVFROM_SYSCALL_NO, sockfd, msgptr, max_msgsize);
+}
+
+long bind(const long sockfd, struct sockaddr *addr, const long addrlen)
+{
+    return syscall(BIND_SYSCALL_NO, sockfd, addr, addrlen);
+}
+
+long listen(const long sockfd, const int backlog_size)
+{
+    return syscall(LISTEN_SYSCALL_NO, sockfd, backlog_size);
+}
+
 
 /* Disable "-Wunused-variable" for the following function. */
 /* The variables are used, just in Assembly and not in C. */
