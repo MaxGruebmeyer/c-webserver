@@ -108,6 +108,7 @@ static int send_dummy_response(const int sockfd)
     int i = 0;
     const int len = 2 * 1024;
 
+    /* Even though C89 doesn't support variable length arrays the GNU C Compiler does. */
 #pragma GCC diagnostic ignored "-Wvla"
     char res[len];
 #pragma GCC diagnostic warning "-Wvla"
@@ -117,10 +118,10 @@ static int send_dummy_response(const int sockfd)
         res[i] = '\0';
     }
 
-    body = "Hallo Samu :-)";
+    body = "<b>Hallo Samu :-)</b>";
     if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
         "Content-Length: %lu\r\n"
-        "Content-Type: text/plain\r\n\r\n"
+        "Content-Type: text/html\r\n\r\n"
         "%s\r\n",
         strlen(body), body)) {
         printf("Could not assign to body!\n");
