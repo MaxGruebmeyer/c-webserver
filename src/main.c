@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 
 #include "errorhandler.h"
@@ -11,6 +12,7 @@
 
 #define MAX_MESSAGE_SIZE 1024
 
+static int send_dummy_response(const int sockfd);
 static void close_socket(const int sockfd);
 
 int main(void)
@@ -71,8 +73,10 @@ int main(void)
             handle_recv_err();
         }
 
+        break;
+
         printf("Got an EAGAIN or EWOULDBLOCK, retrying...\n");
-        if (sendto(connected_sockfd, "HTTP Antwort", 13) == -1) {
+        if (send_dummy_response(connected_sockfd) == -1) {
             close_socket(connected_sockfd);
             close_socket(sockfd);
 
@@ -83,12 +87,33 @@ int main(void)
     }
 
     printf("Received a message: \"%s\"\n", msg);
+    if (send_dummy_response(connected_sockfd) == -1) {
+        printf("Sending dummy response failed!\n");
+        close_socket(connected_sockfd);
+        close_socket(sockfd);
+    }
 
+    printf("Successfully sent dummy response!\n");
+
+    /* TODO (GM): Also close sockets on interrupt signal! */
     close_socket(connected_sockfd);
     close_socket(sockfd);
 
     printf("Done!\n");
     return 0;
+}
+
+static int send_dummy_response(const int sockfd)
+{
+    char *response = "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 4\r\n"
+        "Content-Type: text/plain\r\n\r\n"
+        "Test\r\n";
+
+    /* char *response = "HTTP/1.1 400 BAD REQUEST\r\n"; */
+    printf("Returning dummy response with len %lu:\n%s\n", strlen(response), response);
+
+    return sendto(sockfd, response, strlen(response));
 }
 
 static void close_socket(const int sockfd)
