@@ -105,15 +105,30 @@ int main(void)
 
 static int send_dummy_response(const int sockfd)
 {
-    char *response = "HTTP/1.1 200 OK\r\n"
-        "Content-Length: 4\r\n"
+    int i = 0;
+    const int len = 2 * 1024;
+
+#pragma GCC diagnostic ignored "-Wvla"
+    char res[len];
+#pragma GCC diagnostic warning "-Wvla"
+    char *body;
+
+    for (; i < len; i++) {
+        res[i] = '\0';
+    }
+
+    body = "Hallo Samu :-)";
+    if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
+        "Content-Length: %lu\r\n"
         "Content-Type: text/plain\r\n\r\n"
-        "Test\r\n";
+        "%s\r\n",
+        strlen(body), body)) {
+        printf("Could not assign to body!\n");
+        return -1;
+    }
 
-    /* char *response = "HTTP/1.1 400 BAD REQUEST\r\n"; */
-    printf("Returning dummy response with len %lu:\n%s\n", strlen(response), response);
-
-    return sendto(sockfd, response, strlen(response));
+    printf("Returning dummy response with len %lu:\n%s\n", strlen(res), res);
+    return sendto(sockfd, res, strlen(res));
 }
 
 static void close_socket(const int sockfd)
