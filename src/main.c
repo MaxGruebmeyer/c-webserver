@@ -111,7 +111,8 @@ static int send_dummy_response(const int sockfd)
         res[i] = '\0';
     }
 
-    body = "<b>Hallo Samu :-)</b>";
+    body = "<h1>Hallo Minesweeper-Enthusiasten</h1>\n"
+        "<b>Ich hab nen Webserver, was habt ihr?</b>";
     if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
         "Content-Length: %lu\r\n"
         "Content-Type: text/html\r\n\r\n"
