@@ -11,6 +11,8 @@
 
 #define MAX_MESSAGE_SIZE 1024
 
+static void close_socket(const int sockfd);
+
 int main(void)
 {
     /* AF_INET sockets can either be connection-oriented SOCK_STREAM
@@ -37,16 +39,19 @@ int main(void)
             ((unsigned char)addr.sa_data.addr.port[0] << 8) + (unsigned char)addr.sa_data.addr.port[1]);
 
     if (bind(sockfd, &addr, sizeof(addr)) != 0) {
+        close_socket(sockfd);
         return handle_bind_err(sockfd);
     }
 
     if (listen(sockfd, BACKLOG_SIZE) != 0) {
+        close_socket(sockfd);
         return handle_listen_err();
     }
 
     printf("Watiting for connections...\n");
 
     if ((connected_sockfd = accept(sockfd)) == -1) {
+        close_socket(sockfd);
         return handle_accept_err();
     }
 
@@ -67,21 +72,29 @@ int main(void)
         }
 
         printf("Got an EAGAIN or EWOULDBLOCK, retrying...\n");
+        if (sendto(connected_sockfd, "HTTP Antwort", 13) == -1) {
+            close_socket(connected_sockfd);
+            close_socket(sockfd);
+
+            return handle_send_error();
+        }
+
+        printf("Reply sent!\n");
     }
 
     printf("Received a message: \"%s\"\n", msg);
 
-    /* TODO (GM): Error handling -> Always close sockets during failure! */
-    printf("Closing connected socket %i...\n", connected_sockfd);
-    if (close(connected_sockfd) != 0) {
-        handle_close_err(connected_sockfd);
-    }
+    close_socket(connected_sockfd);
+    close_socket(sockfd);
 
+    printf("Done!\n");
+    return 0;
+}
+
+static void close_socket(const int sockfd)
+{
     printf("Closing socket %i...\n", sockfd);
     if (close(sockfd) != 0) {
         handle_close_err(sockfd);
     }
-
-    printf("Done!\n");
-    return 0;
 }
