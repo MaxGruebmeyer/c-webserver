@@ -14,6 +14,7 @@
 #define RECVFROM_SYSCALL_NO 45
 #define BIND_SYSCALL_NO 49
 #define LISTEN_SYSCALL_NO 50
+#define FORK_SYSCALL_NO 57
 
 long syscall(long sysno, ...);
 

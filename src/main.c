@@ -57,6 +57,8 @@ int main(void)
         return handle_accept_err();
     }
 
+    /* TODO (GM): Fork process here? */
+
     /* TODO (GM): Handle messages larger than MAX_MESSAGE_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
     while (recvfrom(connected_sockfd, msg, MAX_MESSAGE_SIZE) != 0) {
@@ -73,17 +75,8 @@ int main(void)
             handle_recv_err();
         }
 
+        printf("Got an EAGAIN or EWOULDBLOCK, breaking...\n");
         break;
-
-        printf("Got an EAGAIN or EWOULDBLOCK, retrying...\n");
-        if (send_dummy_response(connected_sockfd) == -1) {
-            close_socket(connected_sockfd);
-            close_socket(sockfd);
-
-            return handle_send_error();
-        }
-
-        printf("Reply sent!\n");
     }
 
     printf("Received a message: \"%s\"\n", msg);
