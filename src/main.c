@@ -182,11 +182,15 @@ static int start_accepting(void)
 static int start_listening(void)
 {
     char msg[MAX_REQ_SIZE];
+
+    long bytes_received = -1;
+    long bytes_sent = -1;
+
     printf("Waiting for data...\n");
 
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    while (recvfrom(sockfd, msg, MAX_REQ_SIZE) != 0) {
+    while ((bytes_received = recvfrom(sockfd, msg, MAX_REQ_SIZE)) != 0) {
         /* TODO (GM): Handle all the possible error codes! */
         if (errno == ENOTCONN) {
             printf("Socket not connected!\n");
@@ -201,40 +205,47 @@ static int start_listening(void)
         break;
     }
 
-    printf("Received a message: \"%s\"\n", msg);
-    if (send_dummy_response() == -1) {
-        printf("Sending dummy response failed!\n");
+    if (bytes_received == 0 || *msg == '\0') {
+        printf("Received empty string, signaling termination of connection!\n");
         return -1;
     }
 
-    printf("Successfully sent dummy response!\n");
+    printf("\033[35mReceived a message with length %li on socket %i:\033[0m\n--- REQUEST START ---\n%s\n--- REQUEST END ---\n", bytes_received, sockfd, msg);
+    if ((bytes_sent = send_dummy_response()) < 0) {
+        printf("Sending dummy response failed with return value %li!\n", bytes_sent);
+        handle_send_error();
+
+        return -1;
+    }
+
+    printf("Successfully sent dummy response with length %li!\n", bytes_sent);
     return 0;
 }
 
 static int send_dummy_response(void)
 {
     int i = 0;
-    char res[MAX_RES_SIZE];
-    char *body;
+    char *body = "<h1>Hallo Minesweeper-Enthusiasten</h1>\n"
+        "<b>Ich hab nen Webserver, was habt ihr?</b>\n";
 
+    char res[MAX_RES_SIZE];
     for (; i < MAX_RES_SIZE; i++) {
         res[i] = '\0';
     }
 
-    body = "<h1>Hallo Minesweeper-Enthusiasten</h1>"
-        "<b>Ich hab nen Webserver, was habt ihr?</b>";
     if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html; charset=UTF-8\r\n"
         "Content-Encoding: UTF-8\r\n"
         "Content-Length: %lu\r\n"
         "\r\n"
-        "%s\r\n",
+        "%s"
+        "\r\n\r\n",
         strlen(body), body)) {
         printf("Could not assign to body!\n");
         return -1;
     }
 
-    printf("Sending dummy response via %i with len %lu:\n%s\n", sockfd, strlen(res), res);
+    printf("\033[36mSending response via socket %i with len %lu:\033[0m\n--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", sockfd, strlen(res), res);
     return sendto(sockfd, res, strlen(res));
 }
 
