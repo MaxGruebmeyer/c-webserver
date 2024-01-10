@@ -21,7 +21,7 @@
 
 static void interrupt_sighandler(int _);
 static void interrupt_children(void);
-static void exit_process(const int exit_code);
+static void close_all();
 
 static int start_accepting(void);
 static int start_listening(void);
@@ -62,7 +62,8 @@ static void interrupt_sighandler(int _)
     /* TODO (GM): Set variable so new connections are not accepted! */
     printf("\033[31mInterrupt signal received!\033[0m\n");
 
-    exit_process(0);
+    close_all();
+    exit(0);
 }
 
 # pragma GCC diagnostic error "-Wunused-parameter"
@@ -97,7 +98,7 @@ static void interrupt_children(void)
     printf("All children killed!\n");
 }
 
-static void exit_process(const int exit_code)
+static void close_all()
 {
     printf("\033[33mClosing sockets...\033[0m\n");
 
@@ -109,7 +110,6 @@ static void exit_process(const int exit_code)
     close_socket(&sockfd);
 
     printf("\033[33mAll sockets closed, exiting.\033[0m\n");
-    exit(exit_code);
 }
 
 static int start_accepting(void)
@@ -158,11 +158,9 @@ static int start_accepting(void)
     printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
     while (start_listening() == 0);
 
-    /* exit_process kills the current process by calling exit(), there is absolutely no reason for a return statement here! */
-#pragma GCC diagnostic ignored "-Wreturn-type"
-    exit_process(0);
+    close_all();
+    exit(0);
 }
-#pragma GCC diagnostic error "-Wreturn-type"
 
 static int start_listening(void)
 {
