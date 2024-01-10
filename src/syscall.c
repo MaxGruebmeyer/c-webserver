@@ -84,6 +84,10 @@ int listen(const long sockfd, const int backlog_size)
     return syscall(LISTEN_SYSCALL_NO, sockfd, backlog_size);
 }
 
+int fork()
+{
+    return syscall(FORK_SYSCALL_NO);
+}
 
 /* Disable "-Wunused-variable" for the following function. */
 /* The variables are used, just in Assembly and not in C. */

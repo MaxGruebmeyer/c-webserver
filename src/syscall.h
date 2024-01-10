@@ -28,4 +28,6 @@ int shutdown();
 int bind(const long sockfd, struct sockaddr *addr, const long addrlen);
 int listen(const long sockfd, const int backlog_size);
 
+int fork();
+
 #endif
