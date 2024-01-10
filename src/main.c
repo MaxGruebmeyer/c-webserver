@@ -130,6 +130,7 @@ static void exit_process(const int exit_code)
     interrupt_children();
 
     /* Then we only need to close our socket. */
+    /* TODO (GM): Properly terminate the connection TCP style before just straight up closing the socket! */
     close_socket(&sockfd);
 
     printf("\033[33mAll sockets closed, exiting.\033[0m\n");
