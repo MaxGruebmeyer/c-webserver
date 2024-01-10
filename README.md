@@ -30,6 +30,7 @@ Of course you can also compile the project manually using gcc and linking all re
 
 ## TODO
 
+- Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
 - Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
 - Add Unit Tests
