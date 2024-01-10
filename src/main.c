@@ -228,11 +228,13 @@ static int send_dummy_response(void)
         res[i] = '\0';
     }
 
-    body = "<h1>Hallo Minesweeper-Enthusiasten</h1>\n"
+    body = "<h1>Hallo Minesweeper-Enthusiasten</h1>"
         "<b>Ich hab nen Webserver, was habt ihr?</b>";
     if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=UTF-8\r\n"
+        "Content-Encoding: UTF-8\r\n"
         "Content-Length: %lu\r\n"
-        "Content-Type: text/html\r\n\r\n"
+        "\r\n"
         "%s\r\n",
         strlen(body), body)) {
         printf("Could not assign to body!\n");
