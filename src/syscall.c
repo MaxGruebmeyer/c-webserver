@@ -64,8 +64,8 @@ int accept(const long sockfd)
 
 int sendto(const long sockfd, char *msg, const long msglen)
 {
-    /* 0 because we don't need to pass any flags. */
-    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen, 0);
+    /* We neither need to parse flags, nor an address, hence 0, NULL, 0 at the end. */
+    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen, 0, NULL, 0);
 }
 
 int recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
