@@ -48,7 +48,6 @@ int main(void)
         return handle_socket_err();
     }
 
-    /* TODO (GM): Why does this not bind it to the correct port of 8080? */
     if (construct_sockaddr(&addr, sizeof(addr), IP, PORT) != 0) {
         printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, PORT, errno);
         return -1;
@@ -105,6 +104,7 @@ static void interrupt_children(void)
     printf("Sending SIGINT to all child processes...\n");
 
     /* TODO (GM): What happens when a child connection is closed? How do we free the pid? */
+    /* TODO (GM): Also sockfd just increments -> where is the limit? When is a fd freed again? What are the implication for our connection limit? */
     while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
         printf("Sending SIGINT to child process %i.\n", child_pids[i]);
         kill(child_pids[i], SIGINT);
