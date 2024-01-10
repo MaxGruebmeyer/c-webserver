@@ -21,6 +21,7 @@
 
 static void interrupt_sighandler(int _);
 static void interrupt_children(void);
+static void exit_process(const int exit_code);
 
 static int start_accepting(void);
 static int start_listening(void);
@@ -85,17 +86,9 @@ int main(void)
 static void interrupt_sighandler(int _)
 {
     /* TODO (GM): Set variable so new connections are not accepted! */
+    printf("\033[31mInterrupt signal received!\033[0m\n");
 
-    printf("\033[33mInterrupt signal received, closing sockets!\033[0m\n");
-
-    /* Send SIGINT to all children and wait until the exit so they close their respective sockets */
-    interrupt_children();
-
-    /* Then we only need to close our socket. */
-    close_socket(&sockfd);
-
-    printf("\033[33mAll sockets closed, exiting.\033[0m\n");
-    exit(0);
+    exit_process(0);
 }
 
 # pragma GCC diagnostic error "-Wunused-parameter"
@@ -127,6 +120,20 @@ static void interrupt_children(void)
     }
 
     printf("All children killed!\n");
+}
+
+static void exit_process(const int exit_code)
+{
+    printf("\033[33mClosing sockets...\033[0m\n");
+
+    /* Send SIGINT to all children and wait until the exit so they close their respective sockets */
+    interrupt_children();
+
+    /* Then we only need to close our socket. */
+    close_socket(&sockfd);
+
+    printf("\033[33mAll sockets closed, exiting.\033[0m\n");
+    exit(exit_code);
 }
 
 static int start_accepting(void)
@@ -175,9 +182,11 @@ static int start_accepting(void)
     printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
     while (start_listening() == 0);
 
-    /* Return non-zero status code to prevent infinite loops */
-    return 1;
+    /* exit_process kills the current process by calling exit(), there is absolutely no reason for a return statement here! */
+#pragma GCC diagnostic ignored "-Wreturn-type"
+    exit_process(0);
 }
+#pragma GCC diagnostic error "-Wreturn-type"
 
 static int start_listening(void)
 {
