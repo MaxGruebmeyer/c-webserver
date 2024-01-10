@@ -173,9 +173,7 @@ static int start_accepting(void)
     reset_child_pids();
 
     printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
-    printf("Waiting for data...\n");
-
-    while(start_listening() == 0);
+    while (start_listening() == 0);
 
     /* Return non-zero status code to prevent infinite loops */
     return 1;
@@ -184,6 +182,7 @@ static int start_accepting(void)
 static int start_listening(void)
 {
     char msg[MAX_REQ_SIZE];
+    printf("Waiting for data...\n");
 
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
