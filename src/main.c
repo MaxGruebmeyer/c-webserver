@@ -15,7 +15,7 @@
 #define MAX_REQ_SIZE 1024
 #define MAX_RES_SIZE 2 * 1024
 
-static void sighandle(int _);
+static void interrupt_sighandler(int _);
 static int send_dummy_response(const int sockfd);
 static void close_socket(int *sockfd);
 
@@ -28,7 +28,7 @@ int main(void)
     struct sockaddr addr;
 
     /* Simple interrupt handler to properly shut down sockets on <Ctrl-C> */
-    signal(SIGINT, sighandle);
+    signal(SIGINT, interrupt_sighandler);
 
     /* AF_INET sockets can either be connection-oriented SOCK_STREAM
      * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
@@ -104,7 +104,7 @@ int main(void)
 
 # pragma GCC diagnostic ignored "-Wunused-parameter"
 
-static void sighandle(int _)
+static void interrupt_sighandler(int _)
 {
     printf("\033[33mInterrupt signal received, closing sockets!\033[0m\n");
 
