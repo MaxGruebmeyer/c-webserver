@@ -113,12 +113,8 @@ static void interrupt_children(void)
 
     /* TODO (GM): What happens when a child connection is closed? How do we free the pid? */
     while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
-        /* TODO (GM): Verify children handle SIGINT correctly! */
-
         printf("Sending SIGINT to child process %i.\n", child_pids[i]);
         kill(child_pids[i], SIGINT);
-
-        /* TODO (GM): Wait for completion! */
     }
 
     printf("All children notified!\n");
@@ -141,11 +137,14 @@ static int start_accepting(void)
     if (child_sockfd == -1) {
         close_socket(&sockfd);
 
-        /* TODO (GM): Is this correct here? Or should we just abort everything like when we cannot fork? */
+        /* TODO (GM): Does this make sense? Or should we just abort everything like when we cannot fork? */
         return handle_accept_err();
     }
 
+    /* Result of -1 indicates failure, 0 indicates we are in the child and >0 means we are in the parent. */
     fork_res = fork();
+
+    /* Error case */
     if (fork_res == -1) {
         printf("\033[31mCould not fork process, aborting!\033[0m\n");
 
@@ -155,21 +154,8 @@ static int start_accepting(void)
         return -1;
     }
 
-    if (fork_res == 0) {
-        /* Child process */
-        sockfd = child_sockfd;
-
-        /* Child process should not have any more children. */
-        reset_child_pids();
-
-        printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
-        printf("Waiting for data...\n");
-        while(start_listening() == 0);
-
-        /* Return non-zero status code to prevent infinite loops */
-        return 1;
-    } else {
-        /* Parent process */
+    /* Parent process */
+    if (fork_res > 0) {
         int i = 0;
         while (i < MAX_INCOMING_CONNECTIONS && child_pids[i++] != NO_CHILD);
 
@@ -179,9 +165,20 @@ static int start_accepting(void)
         }
 
         child_pids[i] = fork_res;
+        return 0;
     }
 
-    return 0;
+    /* Child process */
+    sockfd = child_sockfd;
+    reset_child_pids();
+
+    printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
+    printf("Waiting for data...\n");
+
+    while(start_listening() == 0);
+
+    /* Return non-zero status code to prevent infinite loops */
+    return 1;
 }
 
 static int start_listening(void)
@@ -191,10 +188,7 @@ static int start_listening(void)
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
     while (recvfrom(sockfd, msg, MAX_REQ_SIZE) != 0) {
-        /* TODO (GM):
-         * - Handle all possible error codes
-         * - Build state machine that spins(?) if not connected
-         */
+        /* TODO (GM): Handle all the possible error codes! */
         if (errno == ENOTCONN) {
             printf("Socket not connected!\n");
             continue;
@@ -241,7 +235,7 @@ static int send_dummy_response(void)
         return -1;
     }
 
-    printf("Returning dummy response with len %lu:\n%s\n", strlen(res), res);
+    printf("Sending dummy response via %i with len %lu:\n%s\n", sockfd, strlen(res), res);
     return sendto(sockfd, res, strlen(res));
 }
 
