@@ -39,6 +39,7 @@ long syscall(long sysno, ...)
     return syscall_fixed(sysno, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
+/* TODO (GM): These as macros? */
 int close(const int sockfd)
 {
     return syscall(CLOSE_SYSCALL_NO, sockfd);
@@ -87,6 +88,16 @@ int listen(const long sockfd, const int backlog_size)
 int fork()
 {
     return syscall(FORK_SYSCALL_NO);
+}
+
+int wait4(const int pid)
+{
+    return syscall(WAIT4_SYSCALL_NO, pid, NULL, 0, NULL);
+}
+
+int kill(const int pid, const int signal)
+{
+    return syscall(KILL_SYSCALL_NO, pid, signal);
 }
 
 /* Disable "-Wunused-variable" for the following function. */

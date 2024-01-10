@@ -14,7 +14,10 @@
 #define RECVFROM_SYSCALL_NO 45
 #define BIND_SYSCALL_NO 49
 #define LISTEN_SYSCALL_NO 50
+
 #define FORK_SYSCALL_NO 57
+#define WAIT4_SYSCALL_NO 61
+#define KILL_SYSCALL_NO 62
 
 long syscall(long sysno, ...);
 
@@ -29,5 +32,7 @@ int bind(const long sockfd, struct sockaddr *addr, const long addrlen);
 int listen(const long sockfd, const int backlog_size);
 
 int fork();
+int wait4(const int pid);
+int kill(const int pid, const int signal);
 
 #endif
