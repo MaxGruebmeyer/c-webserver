@@ -10,7 +10,8 @@
 #define PORT 8080
 #define BACKLOG_SIZE 100
 
-#define MAX_MESSAGE_SIZE 1024
+#define MAX_REQ_SIZE 1024
+#define MAX_RES_SIZE 2 * 1024
 
 static int send_dummy_response(const int sockfd);
 static void close_socket(const int sockfd);
@@ -23,7 +24,7 @@ int main(void)
     const int sockfd = socket(AF_INET, SOCK_STREAM);
     int connected_sockfd;
 
-    char msg[MAX_MESSAGE_SIZE];
+    char msg[MAX_REQ_SIZE];
     struct sockaddr addr;
 
     if (sockfd == -1) {
@@ -59,9 +60,9 @@ int main(void)
 
     /* TODO (GM): Fork process here? */
 
-    /* TODO (GM): Handle messages larger than MAX_MESSAGE_SIZE -> Set rcvbuf size somehow */
+    /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    while (recvfrom(connected_sockfd, msg, MAX_MESSAGE_SIZE) != 0) {
+    while (recvfrom(connected_sockfd, msg, MAX_REQ_SIZE) != 0) {
         /* TODO (GM):
          * - Handle all possible error codes
          * - Build state machine that spins(?) if not connected
@@ -99,15 +100,10 @@ int main(void)
 static int send_dummy_response(const int sockfd)
 {
     int i = 0;
-    const int len = 2 * 1024;
-
-    /* Even though C89 doesn't support variable length arrays the GNU C Compiler does. */
-#pragma GCC diagnostic ignored "-Wvla"
-    char res[len];
-#pragma GCC diagnostic warning "-Wvla"
+    char res[MAX_RES_SIZE];
     char *body;
 
-    for (; i < len; i++) {
+    for (; i < MAX_RES_SIZE; i++) {
         res[i] = '\0';
     }
 
