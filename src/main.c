@@ -64,6 +64,8 @@ int main(void)
         return handle_accept_err();
     }
 
+    printf("Received an incoming connection, waiting for data...\n");
+
     /* TODO (GM): Fork process here? */
 
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
