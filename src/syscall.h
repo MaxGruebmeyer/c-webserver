@@ -2,7 +2,7 @@
 
 #define SYSCALL_HEADERS
 
-#include "socket.h"
+#include "structs.h"
 
 /* Obviously these numbers are also platform dependant and only work for x86_64 Bit Linux. */
 /* Even x86_32 Bit Linux might use different syscall numbers. */

@@ -26,7 +26,6 @@ static void exit_process(const int exit_code);
 static int start_accepting(void);
 static int start_listening(void);
 static int send_dummy_response(void);
-static void close_socket(int *socket_fd);
 
 static void reset_child_pids();
 
@@ -35,37 +34,13 @@ static int child_pids[MAX_INCOMING_CONNECTIONS];
 
 int main(void)
 {
-    struct sockaddr addr;
-
     /* Simple interrupt handler to properly shut down sockets on <Ctrl-C> */
     signal(SIGINT, interrupt_sighandler);
     reset_child_pids();
 
-    /* AF_INET sockets can either be connection-oriented SOCK_STREAM
-     * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
-     */
-    if ((sockfd = socket(AF_INET, SOCK_STREAM)) == -1) {
-        return handle_socket_err();
-    }
-
-    if (construct_sockaddr(&addr, sizeof(addr), IP, PORT) != 0) {
-        printf("Could not construct server sockaddr %s:%i, error code %i!\n", IP, PORT, errno);
+    if (create_listening_socket(&sockfd, IP, PORT, BACKLOG_SIZE) != 0) {
+        printf("Socket creation failed!\n");
         return -1;
-    }
-
-    printf("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
-            addr.sa_data.addr.ip[0], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[2],
-            ((unsigned char)addr.sa_data.addr.port[0] << 8) + (unsigned char)addr.sa_data.addr.port[1],
-            sockfd);
-
-    if (bind(sockfd, &addr, sizeof(addr)) != 0) {
-        close_socket(&sockfd);
-        return handle_bind_err(sockfd);
-    }
-
-    if (listen(sockfd, BACKLOG_SIZE) != 0) {
-        close_socket(&sockfd);
-        return handle_listen_err();
     }
 
     printf("Watiting for connections...\n");
@@ -257,24 +232,6 @@ static int send_dummy_response(void)
 
     printf("\033[36mSending response via socket %i with len %lu:\033[0m\n--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", sockfd, strlen(res), res);
     return sendto(sockfd, res, strlen(res));
-}
-
-static void close_socket(int *socket_fd)
-{
-    if (*socket_fd < 0) {
-        printf("Could not close socket, negative value %i implies socket already closed!\n", *socket_fd);
-        return;
-    }
-
-    printf("Closing socket %i...\n", *socket_fd);
-    if (close(*socket_fd) != 0) {
-        printf("Close failed, handling error!\n");
-        handle_close_err(*socket_fd);
-    } else {
-        printf("Socket closed successfully!\n");
-    }
-
-    *socket_fd = -1;
 }
 
 static void reset_child_pids()

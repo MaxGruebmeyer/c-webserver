@@ -2,7 +2,7 @@
 #include <stdarg.h>
 
 #include "syscall.h"
-#include "socket.h"
+#include "structs.h"
 
 /* Obviously this is hugely OS and platform dependant and only works on x86_64 Linux systems. */
 /* For other OS the registers might differ and for x86_32 systems as well. */
