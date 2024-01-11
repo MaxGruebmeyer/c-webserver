@@ -213,13 +213,13 @@ static int start_listening(void)
 
     printf("\033[36mSending response via socket %i with len %lu:\033[0m\n--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", sockfd, strlen(res), res);
     if ((bytes_sent = sendto(sockfd, res, strlen(res))) < 0) {
-        printf("Sending dummy response failed with return value %li!\n", bytes_sent);
+        printf("Sending response failed with return value %li!\n", bytes_sent);
         handle_send_error();
 
         return -1;
     }
 
-    printf("Successfully sent dummy response with length %li!\n", bytes_sent);
+    printf("Successfully sent response with length %li!\n", bytes_sent);
     return 0;
 }
 

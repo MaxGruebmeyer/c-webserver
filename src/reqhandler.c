@@ -15,7 +15,7 @@ struct Route {
 static struct Route *routes = NULL;
 static int route_len = 10;
 
-static int get_route(const char *req, char *buf);
+static int get_route(const char *req, char *buf, const int buf_size);
 static int build_res(char *res, char *body, const unsigned res_size);
 
 int route_init()
@@ -101,7 +101,7 @@ int handle_request(char *req, char *res, const unsigned int res_size)
     int i = 0;
     char parsed_route[MAX_ROUTE_LEN];
 
-    if (!get_route(req, parsed_route)) {
+    if (!get_route(req, parsed_route, MAX_ROUTE_LEN)) {
         printf("\033[31mCould not retrieve route from http request, request invalid!\n"
                 "--- BEGIN REQUEST ---\n"
                 "%s\n"
@@ -111,6 +111,7 @@ int handle_request(char *req, char *res, const unsigned int res_size)
         return -1;
     }
 
+    printf("Retrieved route '%s' from request!\n", parsed_route);
     for (i = 0; i < route_len; i++) {
         if (routes[i].route == NULL) {
             break;
@@ -129,8 +130,9 @@ int handle_request(char *req, char *res, const unsigned int res_size)
 #pragma GCC diagnostic error "-Wunused-parameter"
 
 /* TODO (GM): There has to be built-in functionality that does the same! */
-static int get_route(const char *req, char *buf)
+static int get_route(const char *req, char *buf, const int buf_size)
 {
+    int i = 0;
     while (*req != ' ') {
         if (*req++ == '\0') {
             return 0;
@@ -142,10 +144,16 @@ static int get_route(const char *req, char *buf)
             return 0;
         }
 
-        *buf++ = *req;
+        /* +2 because we need to fit the string terminating char as well. */
+        if (i + 2 >= buf_size) {
+            printf("Could not parse route, route too big!\n");
+            return 0;
+        }
+
+        buf[i++] = *req;
     }
 
-    *buf = '\0';
+    buf[i] = '\0';
     return 1;
 }
 
