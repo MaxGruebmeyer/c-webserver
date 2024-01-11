@@ -23,7 +23,7 @@
 
 static void interrupt_sighandler(int _);
 static void interrupt_children(void);
-static void close_all();
+static void kill_everything();
 
 static int start_accepting(void);
 static int start_listening(void);
@@ -39,6 +39,14 @@ int main(void)
     signal(SIGINT, interrupt_sighandler);
     reset_child_pids();
 
+    printf("Initializing routes!\n");
+
+    route_init();
+    add_route("Gerald", "Der Schlingel");
+    add_route("Hannan", "Matheraum");
+
+    printf("Initialized all routes!\n");
+
     if (create_listening_socket(&sockfd, IP, PORT, BACKLOG_SIZE) != 0) {
         printf("Socket creation failed!\n");
         return -1;
@@ -49,8 +57,7 @@ int main(void)
 
     printf("\033[32mDone for this process, killing possible children and closing socket...\033[0m\n");
 
-    interrupt_children();
-    close_socket(&sockfd);
+    kill_everything();
 
     printf("Done!\n");
     return 0;
@@ -63,7 +70,7 @@ static void interrupt_sighandler(int _)
     /* TODO (GM): Set variable so new connections are not accepted! */
     printf("\033[31mInterrupt signal received!\033[0m\n");
 
-    close_all();
+    kill_everything();
     exit(0);
 }
 
@@ -99,7 +106,7 @@ static void interrupt_children(void)
     printf("All children killed!\n");
 }
 
-static void close_all()
+static void kill_everything()
 {
     printf("\033[33mClosing sockets...\033[0m\n");
 
@@ -109,6 +116,9 @@ static void close_all()
     /* Then we only need to close our socket. */
     /* TODO (GM): Properly terminate the connection TCP style before just straight up closing the socket! */
     close_socket(&sockfd);
+
+    /* And don't forget to free the memory used by the routes */
+    route_cleanup();
 
     printf("\033[33mAll sockets closed, exiting.\033[0m\n");
 }
@@ -132,8 +142,8 @@ static int start_accepting(void)
     if (fork_res == -1) {
         printf("\033[31mCould not fork process, aborting!\033[0m\n");
 
-        close_socket(&child_sockfd);
-        close_socket(&sockfd);
+        /* Do nothing */
+        /* TODO (GM): Kill the whole server instead? */
 
         return -1;
     }
@@ -159,7 +169,7 @@ static int start_accepting(void)
     printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
     while (start_listening() == 0);
 
-    close_all();
+    kill_everything();
     exit(0);
 }
 
