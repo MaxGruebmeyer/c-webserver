@@ -14,9 +14,6 @@ static int route_len = 10;
 
 static int send_dummy_response(char *res, const unsigned res_size);
 
-/* Temporarily disable -Wunused-parameter warning since we always return the same response currently. */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 int route_init()
 {
     int i = 0;
@@ -78,6 +75,9 @@ int add_route(char *route, char *html)
     routes[i] = route_s;
     return 1;
 }
+
+/* Temporarily disable -Wunused-parameter warning since we always return the same response currently. */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 /* TODO (GM): Add routing! */
 int handle_request(char *req, char *res, const unsigned int res_size)
