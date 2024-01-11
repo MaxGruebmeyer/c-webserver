@@ -105,10 +105,12 @@ int handle_request(char *req, char *res, const unsigned int res_size)
         printf("\033[31mCould not retrieve route from http request, request invalid!\n"
                 "--- BEGIN REQUEST ---\n"
                 "%s\n"
-                "--- END REQUEST ---\033[0m\n",
+                "--- END REQUEST ---\033[0m\n"
+                /* TODO (GM): Return generic 400 BAD_REQUEST instead? */
+                "Returning 404 NOT_FOUND...\n",
                 req);
 
-        return -1;
+        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
     }
 
     printf("Retrieved route '%s' from request!\n", parsed_route);
