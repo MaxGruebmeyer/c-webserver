@@ -42,8 +42,8 @@ int main(void)
     printf("Initializing routes!\n");
 
     route_init();
-    add_route("Gerald", "Der Schlingel");
-    add_route("Hannan", "Matheraum");
+    add_route("/Gerald", "<h1>Der Lausbua</h1>");
+    add_route("/Hannan", "<h1>Komm in den offenen Matheraum!</h1>");
 
     printf("Initialized all routes!\n");
 

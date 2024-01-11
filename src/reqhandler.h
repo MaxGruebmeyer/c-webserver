@@ -2,6 +2,8 @@
 
 #define REQHANDLER_HEADERS
 
+#define MAX_ROUTE_LEN 256
+
 int route_init();
 void route_cleanup();
 
