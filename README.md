@@ -31,6 +31,9 @@ Of course you can also compile the project manually using gcc and linking all re
 ## TODO
 
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
+- Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
+- Clean up code, structure it nicely etc.
+- Add dev container?
 - Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
 - Add Unit Tests
