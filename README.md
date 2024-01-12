@@ -5,11 +5,14 @@ It's written using only the [C89 (ansi) standard libraries](https://en.wikibooks
 which means no `<sys/socket.h>`, no `<sys/types.h>` and also no `<unistd.h>`.
 
 Well then, how did we do it?
-We utilized some [Linux syscalls](https://thevivekpandey.github.io/posts/2017-09-25-linux-system-calls.html).
-We put the syscall args into their respective registers before calling `__asm__("syscall")`.
+We utilized some [Linux syscalls](https://thevivekpandey.github.io/posts/2017-09-25-linux-system-calls.html) - mainly fork and the socket API -
+to provide the required functionality by placing the required args into their respective registers before calling `__asm__("syscall")`.
 The result is obviously hugely platform dependent since we use Linux kernel features that won't be available on
-other operating systems. Furthermore even the registers (and also some syscall numbers) differ between 32 and 64 Bit Linux Systems,
+other operating systems. Furthermore you have to keep in mind the registers (and also some syscall numbers) differ between 32 and 64 Bit Linux Systems,
 so you can really only run it on a x86_64 Linux machine.
+
+The rest of the web server (e.g. request parsing, routing, header handling) is fairly straight forward and can be done
+pretty easily without any major "tricks".
 
 TODO (GM): Add an Ubuntu dockerfile so you can run the server on other operating systems as well.
 
@@ -21,12 +24,10 @@ so we can support users on other operating systems as well.
 
 TODO (GM): Add docker container!
 
-You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server as well as a test client.
-Use `task run` to run the server and `task run-test` to run a test client.
-But of course you can just use your own "test client", e.g. a browser or curl.
+You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server via `task run`.
+Then you can just use a test client of your choice, e.g. browser or curl to send requests to the server on `localhost:8080`.
 
-Of course you can also compile the project manually using gcc and linking all required files (which is all of
-`src/*.c` for the server and all of `src/*.c` but replacing `src/main.c` with `test/test-client.c` for the client.)
+Of course you can also compile the project manually using gcc and linking all required files (e.g. everything in `src`).
 
 ## TODO
 
@@ -34,6 +35,7 @@ Of course you can also compile the project manually using gcc and linking all re
 - Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
 - Clean up code, structure it nicely etc.
 - Add dev container?
+- Make port configurable via config file and not during compile time!
 - Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
 - Add Unit Tests
