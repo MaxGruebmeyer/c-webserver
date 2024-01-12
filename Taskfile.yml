@@ -9,14 +9,6 @@ tasks:
       - task build OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
       - './{{ .OUTPUT_FOLDER }}/server.out'
 
-  run-test:
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - task build-test OUTPUT_FOLDER='{{ .OUTPUT_FOLDER }}' CFLAGS='{{ .CFLAGS }}'
-      - './{{ .OUTPUT_FOLDER }}/client.out'
-
   build:
     platforms: [linux]
     sources:
@@ -26,21 +18,6 @@ tasks:
       OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
     cmds:
       - task build-shell -f MAIN_FILE="src/main.c" OUT_FILE="server.out"
-    generates:
-      - '{{ .OUTPUT_FOLDER }}/server.out'
-      - '{{ .OUTPUT_FOLDER }}/*.o'
-
-  build-test:
-    platforms: [linux]
-    sources:
-      - src/*.c
-      - exclude: src/main.c
-      - test/test-client.c
-    vars:
-      CFLAGS: '{{ default "-Wall -Wextra -Werror -ansi -pedantic" .CFLAGS }}'
-      OUTPUT_FOLDER: '{{ default "bin" .OUTPUT_FOLDER }}'
-    cmds:
-      - task build-shell -f MAIN_FILE="test/test-client.c" OUT_FILE="client.out"
     generates:
       - '{{ .OUTPUT_FOLDER }}/server.out'
       - '{{ .OUTPUT_FOLDER }}/*.o'
