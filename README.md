@@ -90,6 +90,8 @@ If you decide to go down that route, please feel free to contact us, we'll gladl
 
 - Try to do it with barebone tools and built in features
 - Use man pages to see what we need to do (e.g. man socket)
-- Use assembly to learn how to write a syscall (-> Register size is important!)
+- Use assembly to learn how to write a syscall (-> Register size is important!) -> NULL args are also important
 - When writing about the dev process go in steps, e.g. building something with all the libraries first and
 then removing the libs one after the other until you're left with the C89 stdlibs only)
+- "Multithreading" via fork
+- How 2 routing -> Array because not a lot of routes -> Performance + Simplicity -> Maybe BST or HashMap later
