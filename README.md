@@ -11,30 +11,57 @@ The result is obviously hugely platform dependent since we use Linux kernel feat
 other operating systems. Furthermore you have to keep in mind the registers (and also some syscall numbers) differ between 32 and 64 Bit Linux Systems,
 so you can really only run it on a x86_64 Linux machine.
 
-The rest of the web server (e.g. request parsing, routing, header handling) is fairly straight forward and can be done
-pretty easily without any major "tricks".
-
-TODO (GM): Add an Ubuntu dockerfile so you can run the server on other operating systems as well.
+However not everyone is running x86_64 Linux, so we created an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you can
+use to run the server. Scroll down below to find out how it works.
 
 ## How to run
 
-Since this project is so hugely platform dependent it doesn't make sense to build it for an e.g. windows or macOS
-environment which is why the following only works on Linux systems. Note that we will supply a dev container later on
-so we can support users on other operating systems as well.
+### Some remarks about supported operating systems
 
-TODO (GM): Add docker container!
+Since this project is so hugely platform dependent it doesn't make sense to build it for an e.g. Windows or MacOS
+environment which is why the following only works on Linux x86_64 systems. However, we provide an Ubuntu dev container that you can
+leverage to simulate a Linux system and run our server.
+
+### Well, how do I run the thing on Linux x86_64?
 
 You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server via `task run`.
 Then you can just use a test client of your choice, e.g. browser or curl to send requests to the server on `localhost:8080`.
 
 Of course you can also compile the project manually using gcc and linking all required files (e.g. everything in `src`).
 
+### I'm on x86_64 but not on Linux, what do I do?
+
+For people not using x86_64 Linux we developed an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you
+can use to run the server. If you're unfamiliar with Docker you can learn how to get started [here](https://docs.docker.com/get-started/) or learn
+how to install it [here](https://docs.docker.com/engine/install/).
+
+The recommended way to start the container is via our [docker-compose](https://docs.docker.com/compose/) file.
+This file does two things:
+
+- It mounts this directory at `/opt/c-webserver` inside the docker container so code changes made on the host system are reflected inside the container.
+- It forwards localhost:8080 to port 8080 on the container so you can access the webserver via the browser on your host system.
+
+Use `docker compose up -d` to start the container in detached mode then use `docker ps --all` to list all containers.
+Get the container id and connect to the container via `docker exec -it $ID /bin/bash`.
+Then navigate to the sourcecode at `/opt/c-webserver` and use `task run` to start the server.
+You should now be able to access the webserver at `localhost:8080` on your host system (because of the port forwarding rule).
+If you make any code changes on your host system these are automatically reflected inside the container - just restart the server and they should be live.
+
+### I'm not on x86_64 but instead on [i386, ARM, ...] can I still run the server?
+
+Sadly this is a scenario that we do not support, since we have not tested it yet.
+However, docker supports emulation so not all hope is lost. [The docker multi-platform guide](https://docs.docker.com/build/guide/multi-platform/)
+might be a good starting point.
+
+If you can emulate x86_64 architecture in your docker container you can probably just run the dev container and everything should be fine.
+If you decide to go down that route, please feel free to contact us, we'll gladly provide support.
+
 ## TODO
 
+- Get a domain and host the thing on AWS
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
 - Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
 - Clean up code, structure it nicely etc.
-- Add dev container?
 - Make port configurable via config file and not during compile time!
 - Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
@@ -47,10 +74,7 @@ Of course you can also compile the project manually using gcc and linking all re
 - Support HTTPS
 - Support keep-alive
 - Provide different startup options via configuration file and other maybe during compile time
-- Create build and run scripts (run only on unix since we use unistd.h)
-- Create Dev container
 - Provide basic CI incl. build and build instructions
-- Create Docker image running the thing
 - Deploy to Cloud
 - Automize deployment via terraform (-> Maybe check how difficult it is to allow deployment to e.g. both AWS and GCP)
 - Full HTTP/1.1 Compliance
