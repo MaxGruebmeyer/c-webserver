@@ -10,7 +10,7 @@
 #include "syscall.h"
 #include "socket.h"
 
-#define IP "127.0.0.1"
+#define IP "0.0.0.0"
 #define PORT 8080
 #define BACKLOG_SIZE 100
 
