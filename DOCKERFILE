@@ -1,0 +1,16 @@
+FROM ubuntu:latest
+
+# TODO (GM): Run container as a dedicated user instead of root?
+
+RUN apt update &&\
+    apt upgrade -y &&\
+    apt install -y gcc &&\
+    apt install -y curl &&\
+    sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+RUN mkdir /opt/c-webserver
+VOLUME [ "/opt/c-webserver" ]
+
+# Once ENTRYPOINT exits so does our container.
+# `tail -f /dev/null` runs forever and that's exactly what we want for our container.
+ENTRYPOINT ["tail", "-f", "/dev/null"]
