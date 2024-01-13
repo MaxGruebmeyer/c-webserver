@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
@@ -7,6 +6,8 @@
 #include "syscall.h"
 #include "structs.h"
 #include "errorhandler.h"
+
+#include "logging.h"
 
 static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
 static int get_ipv4_bytes(char *buf, const char *ipv4);
@@ -24,11 +25,11 @@ int create_listening_socket(int *sockfd, const char *ip, const unsigned short po
     }
 
     if (construct_sockaddr(&addr, sizeof(addr), ip, port) != 0) {
-        printf("Could not construct server sockaddr %s:%i, error code %i!\n", ip, port, errno);
+        log_fatal("Could not construct server sockaddr %s:%i, error code %i!\n", ip, port, errno);
         return -1;
     }
 
-    printf("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
+    log_info("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
             addr.sa_data.addr.ip[0], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[2],
             ((unsigned char)addr.sa_data.addr.port[0] << 8) + (unsigned char)addr.sa_data.addr.port[1],
             *sockfd);
@@ -49,16 +50,16 @@ int create_listening_socket(int *sockfd, const char *ip, const unsigned short po
 void close_socket(int *socket_fd)
 {
     if (*socket_fd < 0) {
-        printf("Could not close socket, negative value %i implies socket already closed!\n", *socket_fd);
+        log_error("Could not close socket, negative value %i implies socket already closed!\n", *socket_fd);
         return;
     }
 
-    printf("Closing socket %i...\n", *socket_fd);
+    log_debug("Closing socket %i...\n", *socket_fd);
     if (close(*socket_fd) != 0) {
-        printf("Close failed, handling error!\n");
+        log_error("Close failed, handling error!\n");
         handle_close_err(*socket_fd);
     } else {
-        printf("Socket closed successfully!\n");
+        log_debug("Socket closed successfully!\n");
     }
 
     *socket_fd = -1;
@@ -72,7 +73,7 @@ static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, con
 
     get_port_bytes(addr->sa_data.addr.port, port);
     if (get_ipv4_bytes(addr->sa_data.addr.ip, ipv4) != 0) {
-        printf("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
+        log_fatal("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
         return -1;
     }
 

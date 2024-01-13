@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "reqhandler.h"
+#include "logging.h"
 
 #define INDEX_ROUTE 0
 #define NOT_FOUND_ROUTE 1
@@ -34,7 +35,7 @@ int route_init()
     routes[INDEX_ROUTE] = index_route;
     routes[NOT_FOUND_ROUTE] = not_found_route;
 
-    printf("Added index and 404 route!\n");
+    log_trace("Added index and 404 route!\n");
     i += 2;
 
     while (i < route_len) {
@@ -64,7 +65,7 @@ int add_route(char *route, char *html)
     route_s.html = html;
     route_s.route = route;
 
-    printf("Adding route '%s'...\n", route);
+    log_trace("Adding route '%s'...\n", route);
     while (routes[i].route && i < route_len) {
         ++i;
     }
@@ -73,7 +74,7 @@ int add_route(char *route, char *html)
         routes = realloc(routes, route_len *= 2 * sizeof(struct Route));
 
         if (!routes) {
-            printf("Realloc failed!\n");
+            log_error("Realloc failed!\n");
             return 0;
         }
 
@@ -87,7 +88,7 @@ int add_route(char *route, char *html)
     }
 
     routes[i] = route_s;
-    printf("Route added!\n");
+    log_trace("Route added!\n");
 
     return 1;
 }
@@ -102,7 +103,7 @@ int handle_request(char *req, char *res, const unsigned int res_size)
     char parsed_route[MAX_ROUTE_LEN];
 
     if (!get_route(req, parsed_route, MAX_ROUTE_LEN)) {
-        printf("\033[31mCould not retrieve route from http request, request invalid!\n"
+        log_warn("\033[31mCould not retrieve route from http request, request invalid!\n"
                 "--- BEGIN REQUEST ---\n"
                 "%s\n"
                 "--- END REQUEST ---\033[0m\n"
@@ -113,19 +114,19 @@ int handle_request(char *req, char *res, const unsigned int res_size)
         return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
     }
 
-    printf("Retrieved route '%s' from request!\n", parsed_route);
+    log_debug("Retrieved route '%s' from request!\n", parsed_route);
     for (i = 0; i < route_len; i++) {
         if (routes[i].route == NULL) {
             break;
         }
 
         if (strcmp(parsed_route, routes[i].route) == 0) {
-            printf("Found matching route '%s'!\n", routes[i].route);
+            log_debug("Found matching route '%s'!\n", routes[i].route);
             return build_res(res, routes[i].html, res_size);
         }
     }
 
-    printf("No routes matched, returning default route...\n");
+    log_info("No routes matched, returning default route...\n");
     return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
 }
 
@@ -148,7 +149,7 @@ static int get_route(const char *req, char *buf, const int buf_size)
 
         /* +2 because we need to fit the string terminating char as well. */
         if (i + 2 >= buf_size) {
-            printf("Could not parse route, route too big!\n");
+            log_error("Could not parse route, route too big!\n");
             return 0;
         }
 
@@ -174,7 +175,7 @@ static int build_res(char *res, char *body, const unsigned int res_size)
                 "%s"
                 "\r\n\r\n",
                 strlen(body), body)) {
-        printf("Could not assign to body!\n");
+        log_error("Could not assign to body!\n");
         return -1;
     }
 

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -6,6 +5,7 @@
 
 #include "errorhandler.h"
 #include "reqhandler.h"
+#include "logging.h"
 
 #include "syscall.h"
 #include "socket.h"
@@ -39,36 +39,38 @@ int main(void)
     signal(SIGINT, interrupt_sighandler);
     reset_child_pids();
 
-    printf("Initializing routes!\n");
+    log_debug("Initializing routes!\n");
 
     route_init();
     add_route("/Gerald", "<h1>Der Lausbua</h1>");
     add_route("/Hannan", "<h1>Komm in den offenen Matheraum!</h1>");
 
-    printf("Initialized all routes!\n");
+    log_debug("Initialized all routes!\n");
 
     if (create_listening_socket(&sockfd, IP, PORT, BACKLOG_SIZE) != 0) {
-        printf("Socket creation failed!\n");
+        log_error("Socket creation failed!\n");
         return -1;
     }
 
-    printf("Watiting for connections...\n");
+    log_debug("Watiting for connections...\n");
     while (start_accepting() == 0);
 
-    printf("\033[32mDone for this process, killing possible children and closing socket...\033[0m\n");
+    log_info("\033[32mDone for this process, killing possible children and closing socket...\033[0m\n");
 
     kill_everything();
 
-    printf("Done!\n");
+    log_info("Done!\n");
     return 0;
 }
 
+/* Disable warning, we don't need the parameter in the sighandler
+ *  but we do need to match the method signature. */
 # pragma GCC diagnostic ignored "-Wunused-parameter"
 
 static void interrupt_sighandler(int _)
 {
     /* TODO (GM): Set variable so new connections are not accepted! */
-    printf("\033[31mInterrupt signal received!\033[0m\n");
+    log_warn("\033[31mInterrupt signal received!\033[0m\n");
 
     kill_everything();
     exit(0);
@@ -85,30 +87,30 @@ static void interrupt_children(void)
         return;
     }
 
-    printf("Sending SIGINT to all child processes...\n");
+    log_warn("Sending SIGINT to all child processes...\n");
 
     /* TODO (GM): What happens when a child connection is closed? How do we free the pid? */
     /* TODO (GM): Also sockfd just increments -> where is the limit? When is a fd freed again? What are the implication for our connection limit? */
     while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
-        printf("Sending SIGINT to child process %i.\n", child_pids[i]);
+        log_warn("Sending SIGINT to child process %i.\n", child_pids[i]);
         kill(child_pids[i], SIGINT);
     }
 
-    printf("All children notified!\n");
-    printf("Waiting for children to die...\n");
+    log_warn("All children notified!\n");
+    log_warn("Waiting for children to die...\n");
 
     i = 0;
     while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
-        printf("Waiting for child process %i to complete...\n", child_pids[i]);
+        log_warn("Waiting for child process %i to complete...\n", child_pids[i]);
         wait4(child_pids[i]);
     }
 
-    printf("All children killed!\n");
+    log_warn("All children killed!\n");
 }
 
 static void kill_everything()
 {
-    printf("\033[33mClosing sockets...\033[0m\n");
+    log_debug("\033[33mClosing sockets...\033[0m\n");
 
     /* Send SIGINT to all children and wait until the exit so they close their respective sockets */
     interrupt_children();
@@ -120,7 +122,7 @@ static void kill_everything()
     /* And don't forget to free the memory used by the routes */
     route_cleanup();
 
-    printf("\033[33mAll sockets closed, exiting.\033[0m\n");
+    log_debug("\033[33mAll sockets closed, exiting.\033[0m\n");
 }
 
 static int start_accepting(void)
@@ -140,7 +142,7 @@ static int start_accepting(void)
 
     /* Error case */
     if (fork_res == -1) {
-        printf("\033[31mCould not fork process, aborting!\033[0m\n");
+        log_error("\033[31mCould not fork process, aborting!\033[0m\n");
 
         /* Do nothing */
         /* TODO (GM): Kill the whole server instead? */
@@ -154,7 +156,7 @@ static int start_accepting(void)
         while (i < MAX_INCOMING_CONNECTIONS && child_pids[i++] != NO_CHILD);
 
         if (i == MAX_INCOMING_CONNECTIONS) {
-            printf("\033[33mMaximum number of concurrent connections reached!\033[0m\n");
+            log_error("\033[33mMaximum number of concurrent connections reached!\033[0m\n");
             return -1;
         }
 
@@ -166,10 +168,13 @@ static int start_accepting(void)
     sockfd = child_sockfd;
     reset_child_pids();
 
-    printf("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
+    log_debug("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
     while (start_listening() == 0);
 
+    log_debug("\033[32mConnection served, killing child process...\033[0m\n");
     kill_everything();
+
+    log_debug("\033[32mAll resources released, exiting.\033[0m\n");
     exit(0);
 }
 
@@ -181,14 +186,14 @@ static int start_listening(void)
     long bytes_received = -1;
     long bytes_sent = -1;
 
-    printf("Waiting for data...\n");
+    log_debug("Waiting for data...\n");
 
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
     while ((bytes_received = recvfrom(sockfd, req, MAX_REQ_SIZE)) != 0) {
         /* TODO (GM): Handle all the possible error codes! */
         if (errno == ENOTCONN) {
-            printf("Socket not connected!\n");
+            log_warn("Socket not connected!\n");
             continue;
         }
 
@@ -196,30 +201,34 @@ static int start_listening(void)
             handle_recv_err();
         }
 
-        printf("Got an EAGAIN or EWOULDBLOCK, breaking...\n");
+        log_info("Got an EAGAIN or EWOULDBLOCK, breaking...\n");
         break;
     }
 
     if (bytes_received == 0 || *req == '\0') {
-        printf("Received empty string, signaling termination of connection!\n");
+        log_debug("Received empty string, signaling termination of connection!\n");
         return -1;
     }
 
-    printf("\033[35mReceived a message with length %li on socket %i:\033[0m\n--- REQUEST START ---\n%s\n--- REQUEST END ---\n", bytes_received, sockfd, req);
+    log_debug("\033[35mReceived a message on socket %i.\033[0m\n", sockfd);
+    log_trace("--- REQUEST START ---\n%s\n--- REQUEST END ---\n", req);
+
     if (handle_request(req, res, MAX_RES_SIZE) != 0) {
-        printf("COULD NOT HANDLE REQUEST, EPIC FAIL!\n");
+        log_fatal("COULD NOT HANDLE REQUEST, EPIC FAIL!\n");
         return -1;
     }
 
-    printf("\033[36mSending response via socket %i with len %lu:\033[0m\n--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", sockfd, strlen(res), res);
+    log_debug("\033[36mSending response via socket %i.\033[0m\n", sockfd);
+    log_trace("--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", res);
+
     if ((bytes_sent = sendto(sockfd, res, strlen(res))) < 0) {
-        printf("Sending response failed with return value %li!\n", bytes_sent);
+        log_warn("Sending response failed with return value %li!\n", bytes_sent);
         handle_send_error();
 
         return -1;
     }
 
-    printf("Successfully sent response with length %li!\n", bytes_sent);
+    log_debug("Successfully sent response with length %li!\n", bytes_sent);
     return 0;
 }
 
