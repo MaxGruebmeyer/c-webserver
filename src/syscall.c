@@ -92,7 +92,12 @@ int fork()
 
 int wait4(const int pid)
 {
-    return syscall(WAIT4_SYSCALL_NO, pid, NULL, 0, NULL);
+    return wait4_opts(pid, NULL, 0);
+}
+
+int wait4_opts(const int pid, int *wstatus, int options)
+{
+    return syscall(WAIT4_SYSCALL_NO, pid, wstatus, options, NULL);
 }
 
 int kill(const int pid, const int signal)

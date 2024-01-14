@@ -33,6 +33,7 @@ int listen(const long sockfd, const int backlog_size);
 
 int fork();
 int wait4(const int pid);
+int wait4_opts(const int pid, int *wstatus, int options);
 int kill(const int pid, const int signal);
 
 #endif
