@@ -22,6 +22,8 @@ void log_fatal(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("\033[31m[FATAL]\033[0m\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -43,6 +45,8 @@ void log_error(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("\033[31m[ERROR]\033[0m\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -64,6 +68,8 @@ void log_warn(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("\033[33m[WARN]\033[0m\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -85,6 +91,8 @@ void log_info(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("[INFO]\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -106,6 +114,8 @@ void log_debug(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("[DEBUG]\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -127,5 +137,7 @@ void log_trace(char *fmt, ...)
     arg6 = va_arg(ap, long);
 
     va_end(ap);
+
+    printf("[TRACE]\t");
     printf(fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
