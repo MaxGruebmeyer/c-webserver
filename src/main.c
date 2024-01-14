@@ -19,26 +19,37 @@
 #define MAX_REQ_SIZE 1024
 #define MAX_RES_SIZE 2 * 1024
 
-#define NO_CHILD -1
+#define CHILD_NEVER_INITIALIZED_PID -1
+#define CHILD_RESET_PID 0
 
-static void interrupt_sighandler(int _);
+struct Child {
+    int pid;
+    int sockfd;
+};
+
+static void sigint_handler();
+static void sigchld_handler();
 static void interrupt_children(void);
 static void kill_everything();
 
 static int start_accepting(void);
 static int start_listening(void);
 
-static void reset_child_pids();
+static void reset_children();
 
 static int sockfd = -1;
-static int child_pids[MAX_INCOMING_CONNECTIONS];
+static struct Child children[MAX_INCOMING_CONNECTIONS];
 
 int main(void)
 {
+    /* TODO (GM): Can we switch to sigaction without too much hassle? */
     /* Simple interrupt handler to properly shut down sockets on <Ctrl-C> */
-    signal(SIGINT, interrupt_sighandler);
-    reset_child_pids();
+    signal(SIGINT, sigint_handler);
 
+    /* Handler that releases child resources once the child dies. */
+    signal(SIGCHLD, sigchld_handler);
+
+    reset_children();
     log_debug("Initializing routes!\n");
 
     route_init();
@@ -63,11 +74,7 @@ int main(void)
     return 0;
 }
 
-/* Disable warning, we don't need the parameter in the sighandler
- *  but we do need to match the method signature. */
-# pragma GCC diagnostic ignored "-Wunused-parameter"
-
-static void interrupt_sighandler(int _)
+static void sigint_handler()
 {
     /* TODO (GM): Set variable so new connections are not accepted! */
     log_warn("\033[31mInterrupt signal received!\033[0m\n");
@@ -76,14 +83,46 @@ static void interrupt_sighandler(int _)
     exit(0);
 }
 
-# pragma GCC diagnostic error "-Wunused-parameter"
+/*
+ * TODO (GM): Make this method safer (e.g. extract into its own process)
+ *  because this method will get interrupted by any other signal!
+ */
+static void sigchld_handler()
+{
+    /* TODO (GM): Extract these constants away into e.g. syscall.h? */
+    /* pid -1 to wait for any child. */
+    /* options 1 (WNOHANG) for non-blocking wait */
+    int child_pid = wait4_opts(-1, NULL, 1);
+    int i;
+
+    log_debug("Trying to remove child with pid %i from children array...\n", child_pid);
+
+    for (i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; i++) {
+        if (children[i].pid != child_pid) {
+            continue;
+        }
+
+        /* The child should have already closed its reference to the socket
+         *  but we need to close our reference as well,
+         *  otherwise the fd will NOT be reused! */
+        close_socket(&children[i].sockfd);
+
+        children[i].pid = CHILD_RESET_PID;
+        children[i].sockfd = -1;
+
+        log_debug("Child with pid %i removed successfully from children array!\n", child_pid);
+        return;
+    }
+
+    log_fatal("Could not remove child with pid %i from children array!\n", child_pid);
+}
 
 static void interrupt_children(void)
 {
-    int i = 0;
+    int i;
 
     /* Don't loop and more importantly don't print anything for child processes. */
-    if (child_pids[0] == NO_CHILD) {
+    if (children[0].pid == CHILD_NEVER_INITIALIZED_PID) {
         return;
     }
 
@@ -91,18 +130,26 @@ static void interrupt_children(void)
 
     /* TODO (GM): What happens when a child connection is closed? How do we free the pid? */
     /* TODO (GM): Also sockfd just increments -> where is the limit? When is a fd freed again? What are the implication for our connection limit? */
-    while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
-        log_warn("Sending SIGINT to child process %i.\n", child_pids[i]);
-        kill(child_pids[i], SIGINT);
+    for (i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
+        if (children[i].pid == CHILD_RESET_PID) {
+            continue;
+        }
+
+        log_warn("Sending SIGINT to child process %i.\n", children[i].pid);
+        kill(children[i].pid, SIGINT);
     }
 
     log_warn("All children notified!\n");
     log_warn("Waiting for children to die...\n");
 
-    i = 0;
-    while (i < MAX_INCOMING_CONNECTIONS && child_pids[i] != NO_CHILD) {
-        log_warn("Waiting for child process %i to complete...\n", child_pids[i]);
-        wait4(child_pids[i]);
+    /* TODO (GM): Is this loop still neccessary with the SIGCHLD sighandler? */
+    for (i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
+        if (children[i].pid == CHILD_RESET_PID) {
+            continue;
+        }
+
+        log_warn("Waiting for child process %i to complete...\n", children[i].pid);
+        wait4(children[i].pid);
     }
 
     log_warn("All children killed!\n");
@@ -130,10 +177,8 @@ static int start_accepting(void)
     int child_sockfd = accept(sockfd);
     int fork_res;
 
-    if (child_sockfd == -1) {
-        close_socket(&sockfd);
-
-        /* TODO (GM): Does this make sense? Or should we just abort everything like when we cannot fork? */
+    if (child_sockfd < 0) {
+        log_fatal("Accept failed and returned sockfd %i!\n", child_sockfd);
         return handle_accept_err();
     }
 
@@ -143,30 +188,36 @@ static int start_accepting(void)
     /* Error case */
     if (fork_res == -1) {
         log_error("\033[31mCould not fork process, aborting!\033[0m\n");
-
-        /* Do nothing */
-        /* TODO (GM): Kill the whole server instead? */
-
         return -1;
     }
 
     /* Parent process */
     if (fork_res > 0) {
         int i = 0;
-        while (i < MAX_INCOMING_CONNECTIONS && child_pids[i++] != NO_CHILD);
+        for (; i < MAX_INCOMING_CONNECTIONS; ++i) {
+            if (children[i].pid == CHILD_RESET_PID) {
+                break;
+            }
+
+            if (children[i].pid == CHILD_NEVER_INITIALIZED_PID) {
+                break;
+            }
+        }
 
         if (i == MAX_INCOMING_CONNECTIONS) {
             log_error("\033[33mMaximum number of concurrent connections reached!\033[0m\n");
             return -1;
         }
 
-        child_pids[i] = fork_res;
+        children[i].pid = fork_res;
+        children[i].sockfd = child_sockfd;
+
         return 0;
     }
 
     /* Child process */
     sockfd = child_sockfd;
-    reset_child_pids();
+    reset_children();
 
     log_debug("\033[32mReceived a new connection in newly spawned child process on socket %i!\033[0m\n", sockfd);
     while (start_listening() == 0);
@@ -185,6 +236,11 @@ static int start_listening(void)
 
     long bytes_received = -1;
     long bytes_sent = -1;
+
+    if (sockfd < 0) {
+        log_error("Sockfd %i was negative value!\n", sockfd);
+        return 1;
+    }
 
     log_debug("Waiting for data...\n");
 
@@ -232,10 +288,10 @@ static int start_listening(void)
     return 0;
 }
 
-static void reset_child_pids()
+static void reset_children()
 {
     int i = 0;
     for (; i < MAX_INCOMING_CONNECTIONS; i++) {
-        child_pids[i] = NO_CHILD;
+        children[i].pid = CHILD_NEVER_INITIALIZED_PID;
     }
 }
