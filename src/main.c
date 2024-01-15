@@ -76,6 +76,9 @@ int main(void)
 
 static void sigint_handler()
 {
+    /* Re-register signal */
+    signal(SIGINT, sigint_handler);
+
     /* TODO (GM): Set variable so new connections are not accepted! */
     log_warn("\033[31mInterrupt signal received!\033[0m\n");
 
@@ -94,6 +97,9 @@ static void sigchld_handler()
     /* options 1 (WNOHANG) for non-blocking wait */
     int child_pid = wait4_opts(-1, NULL, 1);
     int i;
+
+    /* Re-register signal */
+    signal(SIGCHLD, sigchld_handler);
 
     log_debug("Trying to remove child with pid %i from children array...\n", child_pid);
 
@@ -178,8 +184,9 @@ static int start_accepting(void)
     int fork_res;
 
     if (child_sockfd < 0) {
-        log_fatal("Accept failed and returned sockfd %i!\n", child_sockfd);
-        return handle_accept_err();
+        /* TODO (GM): Fix */
+        log_warn("Got a negative sockfd, probably because a child has been killed!\n");
+        return 0;
     }
 
     /* Result of -1 indicates failure, 0 indicates we are in the child and >0 means we are in the parent. */
