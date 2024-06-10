@@ -97,7 +97,6 @@ static void sigint_handler()
  */
 static void sigchld_handler()
 {
-    /* TODO (GM): Extract these constants away into e.g. syscall.h? */
     /* pid -1 to wait for any child. */
     /* options 1 (WNOHANG) for non-blocking wait */
     int child_pid = waitpid(-1, NULL, 1);
