@@ -98,9 +98,6 @@ int add_route(char *route, char *html)
     return 1;
 }
 
-/* Temporarily disable -Wunused-parameter warning since we always return the same response currently. */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 /* TODO (GM): Add routing! */
 int handle_request(char *req, char *res, const unsigned int res_size)
 {
@@ -134,8 +131,6 @@ int handle_request(char *req, char *res, const unsigned int res_size)
     log_info("No routes matched, returning default route...\n");
     return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
 }
-
-#pragma GCC diagnostic error "-Wunused-parameter"
 
 /* TODO (GM): There has to be built-in functionality that does the same! */
 static int get_route(const char *req, char *buf, const int buf_size)
