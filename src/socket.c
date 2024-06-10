@@ -2,25 +2,25 @@
 #include <string.h>
 #include <errno.h>
 
+#include <netinet/in.h>
+#include <unistd.h>
+
 #include "socket.h"
-#include "syscall.h"
-#include "structs.h"
 #include "errorhandler.h"
 
 #include "logging.h"
 
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
-static int get_ipv4_bytes(char *buf, const char *ipv4);
-static void get_port_bytes(char *buf, const unsigned short port);
+static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
+static int get_ipv4_bytes(struct in_addr *addr, const char *ipv4);
 
 int create_listening_socket(int *sockfd, const char *ip, const unsigned short port, const int backlog_size)
 {
-    struct sockaddr addr;
+    struct sockaddr_in addr;
 
     /* AF_INET sockets can either be connection-oriented SOCK_STREAM
      * or connectionless SOCK_DGRAM, but not SOCK_SEQPACKET!
      */
-    if ((*sockfd = socket(AF_INET, SOCK_STREAM)) == -1) {
+    if ((*sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         return handle_socket_err();
     }
 
@@ -29,12 +29,18 @@ int create_listening_socket(int *sockfd, const char *ip, const unsigned short po
         return -1;
     }
 
-    log_info("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
-            addr.sa_data.addr.ip[0], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[1], addr.sa_data.addr.ip[2],
-            ((unsigned char)addr.sa_data.addr.port[0] << 8) + (unsigned char)addr.sa_data.addr.port[1],
-            *sockfd);
+    // TODO (GM): Beautify this!
+    union addr {
+        char str[4];
+        struct in_addr ip;
+    } addr_union;
+    addr_union.ip = addr.sin_addr;
 
-    if (bind(*sockfd, &addr, sizeof(addr)) != 0) {
+    log_info("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
+            addr_union.str[0], addr_union.str[1], addr_union.str[2], addr_union.str[3],
+            addr.sin_port, *sockfd);
+
+    if (bind(*sockfd, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         close_socket(sockfd);
         return handle_bind_err(*sockfd);
     }
@@ -66,13 +72,13 @@ void close_socket(int *socket_fd)
 }
 
 /* TODO (GM): Unit test this method! */
-static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, const char *ipv4, const unsigned short port)
+static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, const char *ipv4, const unsigned short port)
 {
     memset(addr, 0, addrlen);
-    addr->sa_family = AF_INET;
+    addr->sin_family = AF_INET;
+    addr->sin_port = port;
 
-    get_port_bytes(addr->sa_data.addr.port, port);
-    if (get_ipv4_bytes(addr->sa_data.addr.ip, ipv4) != 0) {
+    if (get_ipv4_bytes(&addr->sin_addr, ipv4) != 0) {
         log_fatal("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
         return -1;
     }
@@ -80,9 +86,14 @@ static int construct_sockaddr(struct sockaddr *addr, const unsigned addrlen, con
     return 0;
 }
 
-static int get_ipv4_bytes(char *buf, const char *ipv4)
+static int get_ipv4_bytes(struct in_addr *addr, const char *ipv4)
 {
+    // TODO (GM): Beautify this!
+    // TODO (GM): Can this be solved via a union?
     int i = 0;
+    char buf[4];
+    char *buf_cpy = buf;
+
     char tmp_buf[4];
     memset(tmp_buf, '\0', sizeof(tmp_buf));
 
@@ -97,32 +108,21 @@ static int get_ipv4_bytes(char *buf, const char *ipv4)
             continue;
         }
 
-        *buf++ = (unsigned char)atoi(tmp_buf);
+        *buf_cpy++ = (unsigned char)atoi(tmp_buf);
         memset(tmp_buf, '\0', sizeof(tmp_buf));
 
         ipv4++;
         i = 0;
     }
 
-    *buf++ = (unsigned char)atoi(tmp_buf);
+    *buf_cpy++ = (unsigned char)atoi(tmp_buf);
     memset(tmp_buf, '\0', sizeof(tmp_buf));
 
+    addr = 0;
+    addr += buf[0] << 24;
+    addr += buf[1] << 16;
+    addr += buf[2] << 8;
+    addr += buf[3] << 0;
+
     return 0;
-}
-
-static void get_port_bytes(char *buf, const unsigned short port)
-{
-    union {
-        unsigned short port;
-        struct {
-            /* TODO (GM): Why does the smaller part come before the larger part? */
-            /* TODO (GM): Does this have something to do with little Endian? */
-            unsigned char smaller, larger;
-        } bytes;
-    } port_union;
-
-    port_union.port = port;
-
-    *buf++ = port_union.bytes.larger;
-    *buf++ = port_union.bytes.smaller;
 }

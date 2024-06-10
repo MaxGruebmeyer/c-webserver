@@ -180,7 +180,7 @@ static void kill_everything()
 
 static int start_accepting(void)
 {
-    int child_sockfd = accept(sockfd);
+    int child_sockfd = accept(sockfd, NULL, NULL);
     int fork_res;
 
     if (child_sockfd < 0) {
@@ -253,7 +253,7 @@ static int start_listening(void)
 
     /* TODO (GM): Handle messages larger than MAX_REQ_SIZE -> Set rcvbuf size somehow */
     /* TODO (GM): Set the MSG_DONTWAIT Flag to prevent blocking? */
-    while ((bytes_received = recvfrom(sockfd, req, MAX_REQ_SIZE)) != 0) {
+    while ((bytes_received = recvfrom(sockfd, req, MAX_REQ_SIZE, 0, NULL, NULL)) != 0) {
         /* TODO (GM): Handle all the possible error codes! */
         if (errno == ENOTCONN) {
             log_warn("Socket not connected!\n");
@@ -284,7 +284,7 @@ static int start_listening(void)
     log_debug("\033[36mSending response via socket %i.\033[0m\n", sockfd);
     log_trace("--- RESPONSE START ---\n%s\n--- RESPONSE END ---\n", res);
 
-    if ((bytes_sent = sendto(sockfd, res, strlen(res))) < 0) {
+    if ((bytes_sent = sendto(sockfd, res, strlen(res), 0, NULL, 0)) < 0) {
         log_warn("Sending response failed with return value %li!\n", bytes_sent);
         handle_send_error();
 

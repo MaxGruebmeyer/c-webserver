@@ -2,7 +2,7 @@
 
 #define SYSCALL_HEADERS
 
-#include "structs.h"
+#include <netinet/in.h>
 
 /* Obviously these numbers are also platform dependant and only work for x86_64 Bit Linux. */
 /* Even x86_32 Bit Linux might use different syscall numbers. */
@@ -21,15 +21,7 @@
 
 long syscall(long sysno, ...);
 
-int close(const int sockfd);
-int socket(const int communcation_domain, const int type);
-int connect(int sockfd, struct sockaddr *addr, const long addrlen);
-int accept(const long sockfd);
-int sendto(const long sockfd, char *msg, const long msglen);
-int recvfrom(const long sockfd, char *msgptr, const long max_msgsize);
 int shutdown();
-int bind(const long sockfd, struct sockaddr *addr, const long addrlen);
-int listen(const long sockfd, const int backlog_size);
 
 int fork();
 int wait4(const int pid);

@@ -2,7 +2,6 @@
 #include <stdarg.h>
 
 #include "syscall.h"
-#include "structs.h"
 
 /* Obviously this is hugely OS and platform dependant and only works on x86_64 Linux systems. */
 /* For other OS the registers might differ and for x86_32 systems as well. */
@@ -37,52 +36,6 @@ long syscall(long sysno, ...)
     va_end(ap);
 
     return syscall_fixed(sysno, arg1, arg2, arg3, arg4, arg5, arg6);
-}
-
-/* TODO (GM): These as macros? */
-int close(const int sockfd)
-{
-    return syscall(CLOSE_SYSCALL_NO, sockfd);
-}
-
-int socket(const int communcation_domain, const int type)
-{
-    /* 0 is the default protocol for the specified type */
-    return syscall(SOCKET_SYSCALL_NO, communcation_domain, type, 0);
-}
-
-int connect(int sockfd, struct sockaddr *addr, const long addrlen)
-{
-    return syscall(CONNECT_SYSCALL_NO, sockfd, addr, addrlen);
-}
-
-int accept(const long sockfd)
-{
-    /* NULL:NULL means we accept incoming connections from any ip:port. */
-    return syscall(ACCEPT_SYSCALL_NO, sockfd, NULL, NULL);
-}
-
-int sendto(const long sockfd, char *msg, const long msglen)
-{
-    /* We neither need to parse flags, nor an address, hence 0, NULL, 0 at the end. */
-    return syscall(SENDTO_SYSCALL_NO, sockfd, msg, msglen, 0, NULL, 0);
-}
-
-int recvfrom(const long sockfd, char *msgptr, const long max_msgsize)
-{
-    /* 0 because we don't need to pass any flags. */
-    /* NULL: NULL means we allow receiving from any ip:port */
-    return syscall(RECVFROM_SYSCALL_NO, sockfd, msgptr, max_msgsize, 0, NULL, NULL);
-}
-
-int bind(const long sockfd, struct sockaddr *addr, const long addrlen)
-{
-    return syscall(BIND_SYSCALL_NO, sockfd, addr, addrlen);
-}
-
-int listen(const long sockfd, const int backlog_size)
-{
-    return syscall(LISTEN_SYSCALL_NO, sockfd, backlog_size);
 }
 
 int fork()
