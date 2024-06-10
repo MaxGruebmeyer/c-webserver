@@ -1,8 +1,7 @@
 #include <errno.h>
+#include <unistd.h>
 
 #include "errorhandler.h"
-#include "syscall.h"
-
 #include "logging.h"
 
 int handle_socket_err()
@@ -194,7 +193,7 @@ int handle_close_err(const int sockfd)
             break;
         case EINTR:
             log_warn("Close syscall was interrupted by a signal!\n");
-            if (syscall(CLOSE_SYSCALL_NO, sockfd) != 0) {
+            if (close(sockfd) != 0) {
                 /* TODO (GM): Can this cause an infinite loop? */
                 handle_close_err(sockfd);
             }

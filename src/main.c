@@ -1,13 +1,17 @@
+#define _POSIX_SOURCE
+
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+
 #include "errorhandler.h"
 #include "reqhandler.h"
 #include "logging.h"
-
-#include "syscall.h"
 #include "socket.h"
 
 #define IP "0.0.0.0"
@@ -95,7 +99,7 @@ static void sigchld_handler()
     /* TODO (GM): Extract these constants away into e.g. syscall.h? */
     /* pid -1 to wait for any child. */
     /* options 1 (WNOHANG) for non-blocking wait */
-    int child_pid = wait4_opts(-1, NULL, 1);
+    int child_pid = waitpid(-1, NULL, 1);
     int i;
 
     /* Re-register signal */
@@ -155,7 +159,7 @@ static void interrupt_children(void)
         }
 
         log_warn("Waiting for child process %i to complete...\n", children[i].pid);
-        wait4(children[i].pid);
+        waitpid(children[i].pid, NULL, 0);
     }
 
     log_warn("All children killed!\n");
