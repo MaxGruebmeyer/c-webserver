@@ -22,6 +22,8 @@ Since this project is so hugely platform dependent it doesn't make sense to buil
 environment which is why the following only works on Linux x86_64 systems. However, we provide an Ubuntu dev container that you can
 leverage to simulate a Linux system and run our server.
 
+Note that this **MIGHT** work, but because of huge platform dependence this is not at all a given!
+
 ### Well, how do I run the thing on Linux x86_64?
 
 You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server via `task run`.
