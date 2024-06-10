@@ -38,7 +38,7 @@ int create_listening_socket(int *sockfd, const char *ip, const unsigned short po
 
     log_info("Trying to start server on %u.%u.%u.%u:%i with socket id %i\n",
             addr_union.str[0], addr_union.str[1], addr_union.str[2], addr_union.str[3],
-            addr.sin_port, *sockfd);
+            ntohs(addr.sin_port), *sockfd);
 
     if (bind(*sockfd, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         close_socket(sockfd);
@@ -76,9 +76,7 @@ static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, 
 {
     memset(addr, 0, addrlen);
     addr->sin_family = AF_INET;
-    addr->sin_port = port;
-
-    // TODO (GM): Why is ip string 0.0.0.0 here? Is this intended?
+    addr->sin_port = htons(port);
     inet_pton(AF_INET, ipv4, &addr->sin_addr);
 
     return 0;
