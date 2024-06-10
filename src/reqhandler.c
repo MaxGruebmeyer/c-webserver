@@ -59,6 +59,11 @@ void route_cleanup()
 int add_route(char *route, char *html)
 {
     /* TODO (GM): Replace this with something more performant, e.g. a hash map */
+    /* Options include:
+     * - Perfect Hashing
+     * - BST
+     * - Plain old Arrays
+     */
     int i, j = i = 0;
 
     struct Route route_s;

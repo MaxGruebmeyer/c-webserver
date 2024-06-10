@@ -56,6 +56,7 @@ int main(void)
     reset_children();
     log_debug("Initializing routes!\n");
 
+    // TODO (GM): Support html loading and add actual routes!
     route_init();
     add_route("/Gerald", "<h1>Der Lausbua</h1>");
     add_route("/Hannan", "<h1>Komm in den offenen Matheraum!</h1>");
