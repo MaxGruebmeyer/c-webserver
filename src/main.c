@@ -44,6 +44,7 @@ static void reset_children();
 static int sockfd = -1;
 static struct Child children[MAX_INCOMING_CONNECTIONS];
 
+// TODO (GM): Clean up main!
 int main(void)
 {
     /* TODO (GM): Can we switch to sigaction without too much hassle? */
