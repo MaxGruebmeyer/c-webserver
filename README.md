@@ -60,8 +60,7 @@ If you decide to go down that route, please feel free to contact us, we'll gladl
 
 ## TODO
 
-- Port the whole thing to C11
-- Get rid of the platform dependence and use some libraries - like <netinet.h> and <unistd.h>
+- Test if the platform dependence is gone!
 - Get a domain and host the thing on AWS
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
 - Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
