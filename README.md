@@ -1,5 +1,7 @@
 # C-Webserver
 
+TODO (GM): Adjust README
+
 This repo contains a C-Webserver - not yet fully HTTP/1.1 compliant.
 It's written using only the [C89 (ansi) standard libraries](https://en.wikibooks.org/wiki/C_Programming/Standard_libraries)
 which means no `<sys/socket.h>`, no `<sys/types.h>` and also no `<unistd.h>`.
