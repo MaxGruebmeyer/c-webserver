@@ -2,6 +2,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
 
@@ -11,7 +12,6 @@
 #include "logging.h"
 
 static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
-static int get_ipv4_bytes(struct in_addr *addr, const char *ipv4);
 
 int create_listening_socket(int *sockfd, const char *ip, const unsigned short port, const int backlog_size)
 {
@@ -78,51 +78,8 @@ static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, 
     addr->sin_family = AF_INET;
     addr->sin_port = port;
 
-    if (get_ipv4_bytes(&addr->sin_addr, ipv4) != 0) {
-        log_fatal("Could not convert %s:%i to address, check your configuration!\n", ipv4, port);
-        return -1;
-    }
-
-    return 0;
-}
-
-static int get_ipv4_bytes(struct in_addr *addr, const char *ipv4)
-{
-    // TODO (GM): Beautify this!
-    // TODO (GM): Can this be solved via a union?
-    int i = 0;
-    char buf[4];
-    char *buf_cpy = buf;
-
-    char tmp_buf[4];
-    memset(tmp_buf, '\0', sizeof(tmp_buf));
-
-    while (*ipv4) {
-        if (*ipv4 != '.') {
-            if (i >= 3) {
-                /* ipv4 is not a valid ipv4! */
-                return -1;
-            }
-
-            tmp_buf[i++] = *ipv4++;
-            continue;
-        }
-
-        *buf_cpy++ = (unsigned char)atoi(tmp_buf);
-        memset(tmp_buf, '\0', sizeof(tmp_buf));
-
-        ipv4++;
-        i = 0;
-    }
-
-    *buf_cpy++ = (unsigned char)atoi(tmp_buf);
-    memset(tmp_buf, '\0', sizeof(tmp_buf));
-
-    addr = 0;
-    addr += buf[0] << 24;
-    addr += buf[1] << 16;
-    addr += buf[2] << 8;
-    addr += buf[3] << 0;
+    // TODO (GM): Why is ip string 0.0.0.0 here? Is this intended?
+    inet_pton(AF_INET, ipv4, &addr->sin_addr);
 
     return 0;
 }
