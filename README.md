@@ -1,39 +1,26 @@
 # C-Webserver
 
-TODO (GM): Adjust README
-
 This repo contains a C-Webserver - not yet fully HTTP/1.1 compliant.
-It's written using only the [C89 (ansi) standard libraries](https://en.wikibooks.org/wiki/C_Programming/Standard_libraries)
-which means no `<sys/socket.h>`, no `<sys/types.h>` and also no `<unistd.h>`.
-
-Well then, how did we do it?
-We utilized some [Linux syscalls](https://thevivekpandey.github.io/posts/2017-09-25-linux-system-calls.html) - mainly fork and the socket API -
-to provide the required functionality by placing the required args into their respective registers before calling `__asm__("syscall")`.
-The result is obviously hugely platform dependent since we use Linux kernel features that won't be available on
-other operating systems. Furthermore you have to keep in mind the registers (and also some syscall numbers) differ between 32 and 64 Bit Linux Systems,
-so you can really only run it on a x86_64 Linux machine.
-
-However not everyone is running x86_64 Linux, so we created an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you can
-use to run the server. Scroll down below to find out how it works.
+Since C is a pretty barebone language it utilizes a lot of Unix syscalls to achieve
+the desired funtionality. This of course includes the Sockets API, but also
+fork syscalls to support multithreading.
 
 ## How to run
 
 ### Some remarks about supported operating systems
 
-Since this project is so hugely platform dependent it doesn't make sense to build it for an e.g. Windows or MacOS
-environment which is why the following only works on Linux x86_64 systems. However, we provide an Ubuntu dev container that you can
-leverage to simulate a Linux system and run our server.
+Since this project hugely utilizes the Unix syscalls it will only run on Unix systems.
+However, since I've only tested it on Linux I don't want to make any guarantees.
 
-Note that this **MIGHT** work, but because of huge platform dependence this is not at all a given!
-
-### Well, how do I run the thing on Linux x86_64?
+### Well, how do I run the thing on Linux?
 
 You can utilize our project's [Taskfile](https://taskfile.dev/) to build and run both the server via `task run`.
 Then you can just use a test client of your choice, e.g. browser or curl to send requests to the server on `localhost:8080`.
 
-Of course you can also compile the project manually using gcc and linking all required files (e.g. everything in `src`).
+Of course you can also compile the project manually using a compiler of your choice
+(gcc, llvm, ...) and linking all required files (e.g. everything in `src`).
 
-### I'm on x86_64 but not on Linux, what do I do?
+### I'm not on Linux, what do I do?
 
 For people not using x86_64 Linux we developed an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you
 can use to run the server. If you're unfamiliar with Docker you can learn how to get started [here](https://docs.docker.com/get-started/) or learn
@@ -51,18 +38,8 @@ Then navigate to the sourcecode at `/opt/c-webserver` and use `task run` to star
 You should now be able to access the webserver at `localhost:8080` on your host system (because of the port forwarding rule).
 If you make any code changes on your host system these are automatically reflected inside the container - just restart the server and they should be live.
 
-### I'm not on x86_64 but instead on [i386, ARM, ...] can I still run the server?
-
-Sadly this is a scenario that we do not support, since we have not tested it yet.
-However, docker supports emulation so not all hope is lost. [The docker multi-platform guide](https://docs.docker.com/build/guide/multi-platform/)
-might be a good starting point.
-
-If you can emulate x86_64 architecture in your docker container you can probably just run the dev container and everything should be fine.
-If you decide to go down that route, please feel free to contact us, we'll gladly provide support.
-
 ## TODO
 
-- Test if the platform dependence is gone!
 - Get a domain and host the thing on AWS
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
 - Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
@@ -100,3 +77,4 @@ If you decide to go down that route, please feel free to contact us, we'll gladl
 then removing the libs one after the other until you're left with the C89 stdlibs only)
 - "Multithreading" via fork
 - How 2 routing -> Array because not a lot of routes -> Performance + Simplicity -> Maybe BST or HashMap later
+- Switch to C11 and standard libraries, e.g. <unistd.h>, <netinet/in.h>, ...
