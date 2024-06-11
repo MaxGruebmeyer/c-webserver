@@ -59,7 +59,7 @@ int main(void)
 
     // TODO (GM): Support html loading and add actual routes!
     route_init();
-    add_route("/Linux", "<h1>Without Linux this would not be possible!</h1>");
+    add_route("/Unix", "<h1>Without Unix this would not be possible!</h1>");
     add_route("/Matheraum", "<h1>Komm in den offenen Matheraum!</h1>");
 
     log_debug("Initialized all routes!\n");
