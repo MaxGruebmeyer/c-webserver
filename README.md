@@ -5,6 +5,22 @@ Since C is a pretty barebone language it utilizes a lot of Unix syscalls to achi
 the desired funtionality. This of course includes the Sockets API, but also
 fork syscalls to support multithreading.
 
+The webserver currently supports following functionality:
+- Handles basic HTTP GET connections
+- Support basic routing
+- Returns hardcoded HTML
+- Supports multiple simultaneous connections (via fork)
+
+While the following features are still under construction:
+- Error page currently returns 200 OK instead of 404 NOT FOUND.
+- Handle more than just GET Requests
+- Allow for query parameters and html bodies
+- Returns .html files instead of hardcoding HTML in a .c file
+- ... and much more
+
+Currently the routes '/Unix' and '/Matheraum' are defined, as well as the index page.
+Everything else should lead to an HTTP 404 Error Page.
+
 ## How to run
 
 ### Some remarks about supported operating systems
