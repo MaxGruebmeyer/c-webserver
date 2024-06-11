@@ -12,4 +12,11 @@ RUN mkdir /opt/c-webserver
 VOLUME [ "/opt/c-webserver" ]
 
 WORKDIR /opt/c-webserver
+
+# Use this alternative entrypoint for debugging.
+# With this you will have to start the server manually (enter the container and type `task run`)
+#  but the container will not exit once you kill the server.
+# You can use this for debugging purposes - especially in combination with the mounted volume.
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
+
 ENTRYPOINT ["task", "run"]
