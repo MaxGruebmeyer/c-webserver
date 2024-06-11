@@ -44,24 +44,20 @@ If you make any code changes on your host system these are automatically reflect
 
 ## TODO
 
-- Get a domain and host the thing on AWS
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
-- Introduce unit tests using `<assert.h>` (instead of Unity - also applies to Minesweeper.h -> Do we need Mocking? If so, how can we implement it?
-- Clean up code, structure it nicely etc.
+- Implement unit tests - possibly with Unity
+- Add static + dynamic asserts where it makes sense
 - Make port configurable via config file and not during compile time!
 - Clean up `src` folder, e.g. put header files in a subfolder, group files together etc
 - Allow serving of mutliple connections simultaneously (test this via Gatling or similar)
-- Add Unit Tests
-- Add actual logging library (write yourself for semesterproject compliance?)
 - Support the most basic HTTP/1.1 Features
-    - Basic request strucute
+    - Basic request structure
     - GET/POST/PUT/DEL
-- Review what we can replace with the stdlibs!
 - Support HTTPS
 - Support keep-alive
 - Provide different startup options via configuration file and other maybe during compile time
 - Provide basic CI incl. build and build instructions
-- Deploy to Cloud
+- Get a domain and host the thing on AWS
 - Automize deployment via terraform (-> Maybe check how difficult it is to allow deployment to e.g. both AWS and GCP)
 - Full HTTP/1.1 Compliance
 - Full HTTP/2 Compliance
