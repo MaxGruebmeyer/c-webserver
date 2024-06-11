@@ -22,7 +22,7 @@ Of course you can also compile the project manually using a compiler of your cho
 
 ### I'm not on Linux, what do I do?
 
-For people not using x86_64 Linux we developed an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you
+For people not using Linux we developed an Ubuntu [docker container](https://www.docker.com/resources/what-container/) that you
 can use to run the server. If you're unfamiliar with Docker you can learn how to get started [here](https://docs.docker.com/get-started/) or learn
 how to install it [here](https://docs.docker.com/engine/install/).
 
