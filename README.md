@@ -32,9 +32,13 @@ This file does two things:
 - It mounts this directory at `/opt/c-webserver` inside the docker container so code changes made on the host system are reflected inside the container.
 - It forwards localhost:8080 to port 8080 on the container so you can access the webserver via the browser on your host system.
 
-Use `docker compose up -d` to start the container in detached mode then use `docker ps --all` to list all containers.
-Get the container id and connect to the container via `docker exec -it $ID /bin/bash`.
-Then navigate to the sourcecode at `/opt/c-webserver` and use `task run` to start the server.
+Per default, the container starts the server and exits once the server exits.
+However, you can change this behaviour for debugging purposes.
+
+To do this simply change the `ENTRYPOINT` in the `DOCKERFILE`. Don't worry, it has two entrypoints,
+one active and one commented out. Just comment out the active one and activate the one commented out.
+Then use `docker compose up -d` to start the container in detached mode then use `docker ps --all` to list all containers.
+Get the container id and connect to the container via `docker exec -it $ID /bin/bash` and use `task run` to start the server.
 You should now be able to access the webserver at `localhost:8080` on your host system (because of the port forwarding rule).
 If you make any code changes on your host system these are automatically reflected inside the container - just restart the server and they should be live.
 
