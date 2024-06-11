@@ -10,7 +10,7 @@ fork syscalls to support multithreading.
 ### Some remarks about supported operating systems
 
 Since this project hugely utilizes the Unix syscalls it will only run on Unix systems.
-However, since I've only tested it on Linux I don't want to make any guarantees.
+However, since I've only tested it on Linux x86_64 and don't want to make any guarantees about non-Linux systems.
 
 ### Well, how do I run the thing on Linux?
 
