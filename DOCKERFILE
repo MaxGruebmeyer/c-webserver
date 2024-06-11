@@ -11,6 +11,5 @@ RUN apt update &&\
 RUN mkdir /opt/c-webserver
 VOLUME [ "/opt/c-webserver" ]
 
-# Once ENTRYPOINT exits so does our container.
-# `tail -f /dev/null` runs forever and that's exactly what we want for our container.
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+WORKDIR /opt/c-webserver
+ENTRYPOINT ["task", "run"]
