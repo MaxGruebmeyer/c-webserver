@@ -162,9 +162,7 @@ static int get_route(const char *req, char *buf, const int buf_size)
 
 /* Temporarily disable -Wunused-parameter warning since we don't yet use res_size. */
 /* TODO (GM): Introduce res_size check! */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
-static int build_res(char *res, char *body, const unsigned int res_size)
+static int build_res(char *res, char *body, __attribute__((unused)) const unsigned int res_size)
 {
     /* TODO (GM): Verify that res is large enough before using sprintf! */
     if(!sprintf(res, "HTTP/1.1 200 OK\r\n"
@@ -181,5 +179,3 @@ static int build_res(char *res, char *body, const unsigned int res_size)
 
     return 0;
 }
-
-#pragma GCC diagnostic error "-Wunused-parameter"
