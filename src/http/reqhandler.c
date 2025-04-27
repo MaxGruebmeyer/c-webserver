@@ -18,7 +18,15 @@ static struct Route *routes = NULL;
 static int route_len = 10;
 
 static int serve_html_from_fs(char* parsed_route, char *res, const unsigned int res_size);
+
+/*
+ * Extracts the route from the incoming request and stores it in buf.
+ */
 static int get_route(const char *req, char *buf, const int buf_size);
+
+/*
+ * Builds the HTML response.
+ */
 static int build_res(char *res, char *body, const unsigned res_size);
 
 int route_init()
