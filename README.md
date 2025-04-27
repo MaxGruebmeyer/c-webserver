@@ -60,6 +60,8 @@ If you make any code changes on your host system these are automatically reflect
 
 ## TODO
 
+- Implement document generation with doxygen
+- Analyze the program for memory leaks with valgrind
 - Implement TCP state machine so connection terminates correctly (so we avoid TIME_WAIT)
 - Implement unit tests - possibly with Unity
 - Add static + dynamic asserts where it makes sense
