@@ -142,6 +142,7 @@ int handle_request(char *req, char *res, const unsigned int res_size)
     return fs_serve_res;
 }
 
+// TODO (GM): Implement a (layered) LRU-cache to reduce load on the fs
 static int serve_html_from_fs(char* parsed_route, char *res, const unsigned int res_size)
 {
     // +1 to get rid of the leading /
