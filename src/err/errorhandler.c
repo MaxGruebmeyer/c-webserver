@@ -8,6 +8,63 @@
  * File containing methods for handling the multiple possible errors of the socket api.
  */
 
+int handle_fopen_err()
+{
+    switch (errno) {
+        case EINVAL:
+            log_error("Could not open file - file mode was invalid!\n");
+            break;
+        default:
+            log_error("Could not open file - operation failed with error code %i!\n", errno);
+            break;
+    }
+
+    return -1;
+}
+
+int handle_fclose_err()
+{
+    switch (errno) {
+        case EBADF:
+            log_error("Could not close file - file descriptor not valid!\n");
+            break;
+        default:
+            log_error("Could not close file - operation failed with error code %i!\n", errno);
+            break;
+    }
+
+    return -1;
+}
+
+int handle_fread_err()
+{
+    log_error("Could not close file - operation failed with error code %i!\n", errno);
+    return -1;
+}
+
+int handle_fseek_err()
+{
+    switch (errno) {
+        case EINVAL:
+            log_error("Could not seek file - whence argument was not SEEK_SET, SEEK_END, or SEEK_CUR. Or: the resulting file offset would be negative!\n");
+            break;
+        case ESPIPE:
+            log_error("Could not seek file - the file descriptor is not seekable!\n");
+            break;
+        default:
+            log_error("Could not seek file - operation failed with error code %i!\n", errno);
+            break;
+    }
+
+    return -1;
+}
+
+int handle_ftell_err()
+{
+    log_error("Could not tell file - operation failed with error code %i!\n", errno);
+    return -1;
+}
+
 int handle_socket_err()
 {
     switch (errno) {
