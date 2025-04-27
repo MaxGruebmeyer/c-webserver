@@ -104,6 +104,7 @@ int handle_request(char *req, char *res, const unsigned int res_size)
     int i = 0;
     char parsed_route[MAX_ROUTE_LEN];
 
+    // TODO (GM): This should definitly not return a 200 OK
     if (!get_route(req, parsed_route, MAX_ROUTE_LEN)) {
         log_warn("\033[31mCould not retrieve route from http request, request invalid!\n"
                 "--- BEGIN REQUEST ---\n"
