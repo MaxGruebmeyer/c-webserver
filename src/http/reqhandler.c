@@ -132,18 +132,33 @@ int handle_request(char *req, char *res, const unsigned int res_size)
 
     log_warn("Route not found, trying in fs...\n");
 
-    // Buf will be allocated in fs_read
-    char *buf = NULL;
+    // +1 to get rid of the leading /
+    char *filename = parsed_route + 1;
 
-    // + 1 to get rid of the leading /
-    int html_size = fs_read(parsed_route + 1, buf);
+    int file_size = get_file_len(filename);
+    if (file_size == -1) {
+        log_error("Could not retrieve file size of file '%s'!\n", filename);
 
-    if (html_size == -1) {
+        log_info("No routes matched, returning default route...\n");
+        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+    }
+
+    char *buf = malloc(file_size + 1);
+    if (!buf) {
+        log_error("Could not allocate buffer of size %i!\n", file_size + 1);
+
+        log_info("No routes matched, returning default route...\n");
+        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+    }
+
+    buf[file_size] = '\0';
+    if (fs_read(filename, buf, file_size) == -1) {
         log_info("No routes matched, returning default route...\n");
         return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
     }
 
     log_info("Route found in fs.\n");
+    log_fatal("Hi direct: %s\n", buf);
 
     int size = build_res(res, buf, res_size);
     free(buf);
@@ -195,6 +210,8 @@ static int build_res(char *res, char *body, __attribute__((unused)) const unsign
         log_error("Could not assign to body!\n");
         return -1;
     }
+
+    log_fatal("Hi: %s\n", res);
 
     return 0;
 }

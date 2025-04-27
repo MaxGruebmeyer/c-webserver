@@ -2,11 +2,9 @@
 
 #define FSIO_HEADERS
 
-/*
- * Reads the file with the specified name into buf (which will be allocated)
- * and returns the length of the file.
- * Returns -1 on error.
- */
-int fs_read(char *name, char *buf);
+#include <stdlib.h>
+
+int get_file_len(char *name);
+int fs_read(char *name, char *buf, size_t buf_len);
 
 #endif
