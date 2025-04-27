@@ -74,13 +74,13 @@ int add_route(char *route, char *html)
      * - BST
      * - Plain old Arrays
      */
-    int i, j = i = 0;
-
     struct Route route_s;
     route_s.html = html;
     route_s.route = route;
 
     log_trace("Adding route '%s'...\n", route);
+
+    int i = 0;
     while (routes[i].route && i < route_len) {
         ++i;
     }
@@ -93,7 +93,7 @@ int add_route(char *route, char *html)
             return 0;
         }
 
-        for (j = i; j < route_len; ++j) {
+        for (int j = i; j < route_len; ++j) {
             struct Route empty_route;
             empty_route.route = NULL;
             empty_route.html = NULL;
