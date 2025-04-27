@@ -52,7 +52,6 @@ int fs_read(const char *restrict name, char *buf, const size_t buf_len)
     fread(buf, buf_len, 1, f);
     if (ferror(f)) {
         handle_fread_err();
-        free(buf);
         return close_file_after_failure(f);
     }
 
