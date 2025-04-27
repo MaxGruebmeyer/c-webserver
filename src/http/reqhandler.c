@@ -17,6 +17,7 @@ struct Route {
 static struct Route *routes = NULL;
 static int route_len = 10;
 
+static int serve_html_from_fs(char* parsed_route, char *res, const unsigned int res_size);
 static int get_route(const char *req, char *buf, const int buf_size);
 static int build_res(char *res, char *body, const unsigned res_size);
 
@@ -130,35 +131,43 @@ int handle_request(char *req, char *res, const unsigned int res_size)
         }
     }
 
-    log_warn("Route not found, trying in fs...\n");
+    log_debug("Route not found, trying in fs...\n");
+    int fs_serve_res = serve_html_from_fs(parsed_route, res, res_size);
 
+    if (fs_serve_res == -1) {
+        log_info("No routes matched, returning default route...\n");
+        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+    }
+
+    return fs_serve_res;
+}
+
+static int serve_html_from_fs(char* parsed_route, char *res, const unsigned int res_size)
+{
     // +1 to get rid of the leading /
     char *filename = parsed_route + 1;
 
     int file_size = get_file_len(filename);
     if (file_size == -1) {
         log_error("Could not retrieve file size of file '%s'!\n", filename);
-
-        log_info("No routes matched, returning default route...\n");
-        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+        return -1;
     }
 
     char *buf = malloc(file_size + 1);
     if (!buf) {
         log_error("Could not allocate buffer of size %i!\n", file_size + 1);
-
-        log_info("No routes matched, returning default route...\n");
-        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+        return -1;
     }
 
     buf[file_size] = '\0';
     if (fs_read(filename, buf, file_size) == -1) {
-        log_info("No routes matched, returning default route...\n");
-        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+        log_error("Could not read contents of file '%s' from disk!\n", filename);
+        free(buf);
+
+        return -1;
     }
 
-    log_info("Route found in fs.\n");
-    log_fatal("Hi direct: %s\n", buf);
+    log_debug("Serving route '%s' directly from disk.\n", filename);
 
     int size = build_res(res, buf, res_size);
     free(buf);
