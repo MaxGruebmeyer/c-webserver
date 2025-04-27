@@ -5,8 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install go-task
-        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
-      - name: task build
-        run: task build
+      - name: make
+        run: make
       # TODO (GM): Add unit/integration tests and add them here!
