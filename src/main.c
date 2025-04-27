@@ -130,8 +130,6 @@ static void sigchld_handler()
 
 static void interrupt_children(void)
 {
-    int i;
-
     /* Don't loop and more importantly don't print anything for child processes. */
     if (children[0].pid == CHILD_NEVER_INITIALIZED_PID) {
         return;
@@ -141,7 +139,7 @@ static void interrupt_children(void)
 
     /* TODO (GM): What happens when a child connection is closed? How do we free the pid? */
     /* TODO (GM): Also sockfd just increments -> where is the limit? When is a fd freed again? What are the implication for our connection limit? */
-    for (i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
+    for (int i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
         if (children[i].pid == CHILD_RESET_PID) {
             continue;
         }
@@ -154,7 +152,7 @@ static void interrupt_children(void)
     log_warn("Waiting for children to die...\n");
 
     /* TODO (GM): Is this loop still neccessary with the SIGCHLD sighandler? */
-    for (i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
+    for (int i = 0; i < MAX_INCOMING_CONNECTIONS && children[i].pid != CHILD_NEVER_INITIALIZED_PID; ++i) {
         if (children[i].pid == CHILD_RESET_PID) {
             continue;
         }
