@@ -8,7 +8,7 @@
 static int get_file_len(FILE *f);
 static int close_file_after_failure(FILE *f);
 
-int read(char *name, char *buf)
+int fs_read(char *name, char *buf)
 {
     // TODO (GM): What about race conditions? File already open?
     // TODO (GM): Implement a cache?
@@ -35,11 +35,13 @@ int read(char *name, char *buf)
     fread(buf, file_size, 1, f);
     if (ferror(f)) {
         handle_fread_err();
+        free(buf);
         return close_file_after_failure(f);
     }
 
     if (fclose(f) != 0) {
-        return handle_fclose_err();
+        // TODO (GM): Good to just swallow this?
+        handle_fclose_err();
     }
 
     return file_size;

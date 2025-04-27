@@ -7,6 +7,6 @@
  * and returns the length of the file.
  * Returns -1 on error.
  */
-int read(char *name, char *buf);
+int fs_read(char *name, char *buf);
 
 #endif

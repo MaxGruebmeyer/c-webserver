@@ -4,6 +4,7 @@
 
 #include "reqhandler.h"
 #include "../log/logging.h"
+#include "../fs/io.h"
 
 #define INDEX_ROUTE 0
 #define NOT_FOUND_ROUTE 1
@@ -129,20 +130,37 @@ int handle_request(char *req, char *res, const unsigned int res_size)
         }
     }
 
-    log_info("No routes matched, returning default route...\n");
-    return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+    log_warn("Route not found, trying in fs...\n");
+
+    // Buf will be allocated in fs_read
+    char *buf = NULL;
+
+    // + 1 to get rid of the leading /
+    int html_size = fs_read(parsed_route + 1, buf);
+
+    if (html_size == -1) {
+        log_info("No routes matched, returning default route...\n");
+        return build_res(res, routes[NOT_FOUND_ROUTE].html, res_size);
+    }
+
+    log_info("Route found in fs.\n");
+
+    int size = build_res(res, buf, res_size);
+    free(buf);
+
+    return size;
 }
 
 /* TODO (GM): There has to be built-in functionality that does the same! */
 static int get_route(const char *req, char *buf, const int buf_size)
 {
-    int i = 0;
     while (*req != ' ') {
         if (*req++ == '\0') {
             return 0;
         }
     }
 
+    int i = 0;
     while (*++req != ' ') {
         if (*req == '\0') {
             return 0;
