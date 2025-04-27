@@ -2,6 +2,10 @@
 
 #define ERRORHANDLER_HEADERS
 
+/*
+ * Header file containing methods for handling the multiple possible errors of the socket api.
+ */
+
 int handle_socket_err();
 int handle_bind_err(const int sockfd);
 int handle_listen_err();

@@ -12,6 +12,10 @@
 /* TODO (GM): Read this from config file instead of making it a compile time constant? */
 #define APPLICATION_LOGLEVEL LOGLEVEL_DEBUG
 
+/*
+ * Header file containing logging methods
+ */
+
 void log_fatal(char *fmt, ...);
 void log_error(char *fmt, ...);
 void log_warn(char *fmt, ...);

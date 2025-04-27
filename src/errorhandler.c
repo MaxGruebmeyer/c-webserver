@@ -4,6 +4,10 @@
 #include "errorhandler.h"
 #include "logging.h"
 
+/*
+ * File containing methods for handling the multiple possible errors of the socket api.
+ */
+
 int handle_socket_err()
 {
     switch (errno) {

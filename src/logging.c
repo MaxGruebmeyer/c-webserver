@@ -3,6 +3,10 @@
 
 #include "logging.h"
 
+/*
+ * File containing logging methods
+ */
+
 /* TODO (GM): Can we reduce duplication in these methods? */
 void log_fatal(char *fmt, ...)
 {

@@ -10,6 +10,10 @@
 
 #include "logging.h"
 
+/*
+ * File containing basic methods for constructing and deleting sockets
+ */
+
 static int construct_sockaddr(struct sockaddr_in *addr, const unsigned addrlen, const char *ipv4, const unsigned short port);
 
 int create_listening_socket(int *sockfd, const char *ip, const unsigned short port, const int backlog_size)
