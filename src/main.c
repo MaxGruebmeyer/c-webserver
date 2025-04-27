@@ -9,10 +9,10 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#include "errorhandler.h"
-#include "reqhandler.h"
-#include "logging.h"
-#include "socket.h"
+#include "err/errorhandler.h"
+#include "log/logging.h"
+#include "http/reqhandler.h"
+#include "http/socket/socket.h"
 
 #define IP "0.0.0.0"
 #define PORT 8080
@@ -31,8 +31,8 @@ struct Child {
     int sockfd;
 };
 
-static void sigint_handler();
-static void sigchld_handler();
+static void sigint_handler(int _);
+static void sigchld_handler(int _);
 static void interrupt_children(void);
 static void kill_everything();
 
@@ -80,7 +80,7 @@ int main(void)
     return 0;
 }
 
-static void sigint_handler()
+static void sigint_handler(__attribute__((unused)) const int _)
 {
     /* Re-register signal */
     signal(SIGINT, sigint_handler);
@@ -96,7 +96,7 @@ static void sigint_handler()
  * TODO (GM): Make this method safer (e.g. extract into its own process)
  *  because this method will get interrupted by any other signal!
  */
-static void sigchld_handler()
+static void sigchld_handler(__attribute__((unused)) const int _)
 {
     /* pid -1 to wait for any child. */
     /* options 1 (WNOHANG) for non-blocking wait */

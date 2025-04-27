@@ -6,9 +6,8 @@
 #include <unistd.h>
 
 #include "socket.h"
-#include "errorhandler.h"
-
-#include "logging.h"
+#include "../../err/errorhandler.h"
+#include "../../log/logging.h"
 
 /*
  * File containing basic methods for constructing and deleting sockets

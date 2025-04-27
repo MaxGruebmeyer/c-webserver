@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "reqhandler.h"
-#include "logging.h"
+#include "../log/logging.h"
 
 #define INDEX_ROUTE 0
 #define NOT_FOUND_ROUTE 1

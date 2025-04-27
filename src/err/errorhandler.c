@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #include "errorhandler.h"
-#include "logging.h"
+#include "../log/logging.h"
 
 /*
  * File containing methods for handling the multiple possible errors of the socket api.
