@@ -38,7 +38,7 @@ int get_file_len(const char *restrict name)
     return fsize;
 }
 
-int fs_read(const char *restrict name, char *buf, const size_t buf_len)
+int fs_read(const char *restrict name, char *restrict buf, const size_t buf_len)
 {
     // TODO (GM): What about race conditions? File already open?
     // TODO (GM): Implement a cache?
